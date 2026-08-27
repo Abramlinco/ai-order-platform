@@ -4,28 +4,45 @@
 // Purpose: Main business-owner dashboard
 // ============================================================
 
+// ============================================================
+// IMPORTS
+// ============================================================
 
+import DashboardHeader from "./components/DashboardHeader";
+
+import SummaryCards from "./components/SummaryCards";
+
+import StatusBadge, {
+  type OrderStatus,
+} from "./components/StatusBadge";
+
+import RiderDetails, {
+  type Rider,
+} from "./components/RiderDetails";
+import RecentOrders from "./components/RecentOrders";
+
+import type { Order } from "./types";
 // ============================================================
 // 1. TYPE DEFINITIONS
 // ============================================================
 
 // Available order statuses in the system.
-type OrderStatus =
-  | "Awaiting approval"
-  | "Finding rider"
-  | "Rider assigned"
-  | "Out for delivery"
-  | "Delivered"
-  | "Cancelled";
+// type OrderStatus =
+//   | "Awaiting approval"
+//   | "Finding rider"
+//   | "Rider assigned"
+//   | "Out for delivery"
+//   | "Delivered"
+//   | "Cancelled";
 
 
 // Rider information.
-type Rider = {
-  id: string;
-  name: string;
-  phone: string;
-  bike: string;
-};
+// type Rider = {
+//   id: string;
+//   name: string;
+//   phone: string;
+//   bike: string;
+// };
 
 
 // Product information inside an order.
@@ -35,35 +52,6 @@ type OrderItem = {
   unitPrice: number;
   subtotal: number;
 };
-
-
-// Complete order structure.
-type Order = {
-  id: string;
-
-  // Customer information
-  customer: string;
-  customerId: string;
-  customerPhone: string;
-
-  // Order information
-  items: OrderItem[];
-
-  // Financial information
-  subtotal: number;
-  deliveryFee: number;
-  total: number;
-
-  // Delivery information
-  location: string;
-
-  // Order status
-  status: OrderStatus;
-
-  // Assigned rider
-  rider: Rider | null;
-};
-
 
 // ============================================================
 // 2. MOCK RIDER DATA
@@ -220,39 +208,39 @@ const money = (amount: number) =>
 // Displays the current order status.
 // ============================================================
 
-function StatusBadge({
-  status,
-}: {
-  status: OrderStatus;
-}) {
-  const styles: Record<OrderStatus, string> = {
-    "Awaiting approval":
-      "bg-amber-100 text-amber-700",
+// function StatusBadge({
+//   status,
+// }: {
+//   status: OrderStatus;
+// }) {
+//   const styles: Record<OrderStatus, string> = {
+//     "Awaiting approval":
+//       "bg-amber-100 text-amber-700",
 
-    "Finding rider":
-      "bg-purple-100 text-purple-700",
+//     "Finding rider":
+//       "bg-purple-100 text-purple-700",
 
-    "Rider assigned":
-      "bg-indigo-100 text-indigo-700",
+//     "Rider assigned":
+//       "bg-indigo-100 text-indigo-700",
 
-    "Out for delivery":
-      "bg-blue-100 text-blue-700",
+//     "Out for delivery":
+//       "bg-blue-100 text-blue-700",
 
-    Delivered:
-      "bg-emerald-100 text-emerald-700",
+//     Delivered:
+//       "bg-emerald-100 text-emerald-700",
 
-    Cancelled:
-      "bg-red-100 text-red-700",
-  };
+//     Cancelled:
+//       "bg-red-100 text-red-700",
+//   };
 
-  return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles[status]}`}
-    >
-      {status}
-    </span>
-  );
-}
+//   return (
+//     <span
+//       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles[status]}`}
+//     >
+//       {status}
+//     </span>
+//   );
+// }
 
 
 // ============================================================
@@ -269,413 +257,413 @@ function StatusBadge({
 // message instead.
 // ============================================================
 
-function RiderDetails({
-  rider,
-}: {
-  rider: Rider | null;
-}) {
-  // No rider assigned
-  if (!rider) {
-    return (
-      <div>
-        <p className="font-medium text-slate-400">
-          Not assigned
-        </p>
+// function RiderDetails({
+//   rider,
+// }: {
+//   rider: Rider | null;
+// }) {
+//   // No rider assigned
+//   if (!rider) {
+//     return (
+//       <div>
+//         <p className="font-medium text-slate-400">
+//           Not assigned
+//         </p>
 
-        <p className="mt-1 text-xs text-slate-400">
-          Awaiting rider dispatch
-        </p>
-      </div>
-    );
-  }
+//         <p className="mt-1 text-xs text-slate-400">
+//           Awaiting rider dispatch
+//         </p>
+//       </div>
+//     );
+//   }
 
 
-  // Rider assigned
-  return (
-    <div className="min-w-[180px]">
+//   // Rider assigned
+//   return (
+//     <div className="min-w-[180px]">
 
-      {/* Rider name */}
-      <p className="font-semibold text-slate-900">
-        {rider.name}
-      </p>
+//       {/* Rider name */}
+//       <p className="font-semibold text-slate-900">
+//         {rider.name}
+//       </p>
 
-      {/* Rider phone */}
-      <p className="mt-1 text-xs text-slate-500">
-        {rider.phone}
-      </p>
+//       {/* Rider phone */}
+//       <p className="mt-1 text-xs text-slate-500">
+//         {rider.phone}
+//       </p>
 
-      {/* Bike details */}
-      <p className="mt-1 text-xs text-slate-500">
-        {rider.bike}
-      </p>
+//       {/* Bike details */}
+//       <p className="mt-1 text-xs text-slate-500">
+//         {rider.bike}
+//       </p>
 
-      {/* Rider ID */}
-      <p className="mt-1 text-[11px] text-slate-400">
-        Rider ID: {rider.id}
-      </p>
+//       {/* Rider ID */}
+//       <p className="mt-1 text-[11px] text-slate-400">
+//         Rider ID: {rider.id}
+//       </p>
 
-    </div>
-  );
-}
+//     </div>
+//   );
+// }
 
 
 // ============================================================
 // 7. DASHBOARD HEADER
 // ============================================================
 
-function DashboardHeader() {
-  return (
-    <header className="border-b bg-white">
+// function DashboardHeader() {
+//   return (
+//     <header className="border-b bg-white">
 
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+//       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
-        {/* Brand */}
-        <div>
+//         {/* Brand */}
+//         <div>
 
-          <h1 className="text-2xl font-bold tracking-tight">
-            OrderPilot
-          </h1>
+//           <h1 className="text-2xl font-bold tracking-tight">
+//             OrderPilot
+//           </h1>
 
-          <p className="text-sm text-slate-500">
-            AI-powered order & delivery management
-          </p>
+//           <p className="text-sm text-slate-500">
+//             AI-powered order & delivery management
+//           </p>
 
-        </div>
-
-
-        {/* Header actions */}
-        <div className="flex items-center gap-3">
-
-          <button className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
-            Notifications
-          </button>
+//         </div>
 
 
-          {/* User avatar */}
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 font-semibold text-white">
-            A
-          </div>
+//         {/* Header actions */}
+//         <div className="flex items-center gap-3">
 
-        </div>
-
-      </div>
-
-    </header>
-  );
-}
+//           <button className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+//             Notifications
+//           </button>
 
 
-// ============================================================
-// 8. SUMMARY CARDS
-// ============================================================
+//           {/* User avatar */}
+//           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 font-semibold text-white">
+//             A
+//           </div>
 
-function SummaryCards() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+//         </div>
 
+//       </div>
 
-      {/* Today's orders */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-
-        <p className="text-sm text-slate-500">
-          Today&apos;s orders
-        </p>
-
-        <p className="mt-2 text-3xl font-bold">
-          24
-        </p>
-
-        <p className="mt-1 text-sm text-emerald-600">
-          +12% from yesterday
-        </p>
-
-      </div>
-
-
-      {/* Pending approval */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-
-        <p className="text-sm text-slate-500">
-          Pending approval
-        </p>
-
-        <p className="mt-2 text-3xl font-bold">
-          4
-        </p>
-
-        <p className="mt-1 text-sm text-amber-600">
-          Requires attention
-        </p>
-
-      </div>
-
-
-      {/* Out for delivery */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-
-        <p className="text-sm text-slate-500">
-          Out for delivery
-        </p>
-
-        <p className="mt-2 text-3xl font-bold">
-          7
-        </p>
-
-        <p className="mt-1 text-sm text-blue-600">
-          Currently active
-        </p>
-
-      </div>
-
-
-      {/* Revenue */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-
-        <p className="text-sm text-slate-500">
-          Today&apos;s revenue
-        </p>
-
-        <p className="mt-2 text-3xl font-bold">
-          ₦486,000
-        </p>
-
-        <p className="mt-1 text-sm text-emerald-600">
-          +8.4% this week
-        </p>
-
-      </div>
-
-    </div>
-  );
-}
+//     </header>
+//   );
+// }
 
 
 // ============================================================
-// 9. RECENT ORDERS TABLE
+// 7. SUMMARY CARDS
 // ============================================================
 
-function RecentOrders() {
-  return (
-    <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+// function SummaryCards() {
+//   return (
+//     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 
 
-      {/* ======================================================
-          9.1 ORDERS HEADER
-      ======================================================= */}
+//       {/* Today's orders */}
+//       <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-      <div className="flex items-center justify-between border-b px-6 py-5">
+//         <p className="text-sm text-slate-500">
+//           Today&apos;s orders
+//         </p>
 
-        <div>
+//         <p className="mt-2 text-3xl font-bold">
+//           24
+//         </p>
 
-          <h3 className="text-lg font-semibold">
-            Recent orders
-          </h3>
+//         <p className="mt-1 text-sm text-emerald-600">
+//           +12% from yesterday
+//         </p>
 
-          <p className="text-sm text-slate-500">
-            Review and manage incoming orders.
-          </p>
+//       </div>
 
-        </div>
 
+//       {/* Pending approval */}
+//       <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-        <button className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
-          View all orders
-        </button>
+//         <p className="text-sm text-slate-500">
+//           Pending approval
+//         </p>
 
-      </div>
+//         <p className="mt-2 text-3xl font-bold">
+//           4
+//         </p>
 
+//         <p className="mt-1 text-sm text-amber-600">
+//           Requires attention
+//         </p>
 
-      {/* ======================================================
-          9.2 ORDERS TABLE
-      ======================================================= */}
+//       </div>
 
-      <div className="overflow-x-auto">
 
-        <table className="w-full min-w-[1150px] text-left text-sm">
+//       {/* Out for delivery */}
+//       <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
+//         <p className="text-sm text-slate-500">
+//           Out for delivery
+//         </p>
 
-          {/* ==================================================
-              9.2.1 TABLE HEADERS
-          =================================================== */}
+//         <p className="mt-2 text-3xl font-bold">
+//           7
+//         </p>
 
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+//         <p className="mt-1 text-sm text-blue-600">
+//           Currently active
+//         </p>
 
-            <tr>
+//       </div>
 
-              <th className="px-6 py-4">
-                Customer
-              </th>
 
-              <th className="px-6 py-4">
-                Order information
-              </th>
+//       {/* Revenue */}
+//       <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-              <th className="px-6 py-4">
-                Location
-              </th>
+//         <p className="text-sm text-slate-500">
+//           Today&apos;s revenue
+//         </p>
 
-              <th className="px-6 py-4">
-                Total
-              </th>
+//         <p className="mt-2 text-3xl font-bold">
+//           ₦486,000
+//         </p>
 
-              <th className="px-6 py-4">
-                Status
-              </th>
+//         <p className="mt-1 text-sm text-emerald-600">
+//           +8.4% this week
+//         </p>
 
-              <th className="px-6 py-4">
-                Delivered by
-              </th>
+//       </div>
 
-              <th className="px-6 py-4">
-                Invoice
-              </th>
+//     </div>
+//   );
+// }
 
-            </tr>
 
-          </thead>
+// ============================================================
+// 8. RECENT ORDERS TABLE
+// ============================================================
 
+// function RecentOrders() {
+//   return (
+//     <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
 
-          {/* ==================================================
-              9.2.2 TABLE BODY
-          =================================================== */}
 
-          <tbody className="divide-y divide-slate-100">
+//       {/* ======================================================
+//           9.1 ORDERS HEADER
+//       ======================================================= */}
 
-            {orders.map((order) => (
+//       <div className="flex items-center justify-between border-b px-6 py-5">
 
-              <tr
-                key={order.id}
-                className="hover:bg-slate-50"
-              >
+//         <div>
 
+//           <h3 className="text-lg font-semibold">
+//             Recent orders
+//           </h3>
 
-                {/* ============================================
-                    CUSTOMER
-                ============================================= */}
+//           <p className="text-sm text-slate-500">
+//             Review and manage incoming orders.
+//           </p>
 
-                <td className="px-6 py-5">
+//         </div>
 
-                  <p className="font-semibold">
-                    {order.customer}
-                  </p>
 
-                  <p className="text-xs text-slate-500">
-                    {order.customerId}
-                  </p>
+//         <button className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
+//           View all orders
+//         </button>
 
-                  <p className="text-xs text-slate-400">
-                    {order.customerPhone}
-                  </p>
+//       </div>
 
-                  <p className="text-xs text-slate-400">
-                    Order {order.id}
-                  </p>
 
-                </td>
+//       {/* ======================================================
+//           9.2 ORDERS TABLE
+//       ======================================================= */}
 
+//       <div className="overflow-x-auto">
 
-                {/* ============================================
-                    ORDER INFORMATION
-                ============================================= */}
+//         <table className="w-full min-w-[1150px] text-left text-sm">
 
-                <td className="px-6 py-5">
 
-                  {order.items.map((item, index) => (
+//           {/* ==================================================
+//               9.2.1 TABLE HEADERS
+//           =================================================== */}
 
-                    <div key={index}>
+//           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
 
-                      <p className="font-medium">
-                        {item.productName}
-                      </p>
+//             <tr>
 
-                      <p className="text-xs text-slate-500">
-                        Quantity: {item.quantity}
-                      </p>
+//               <th className="px-6 py-4">
+//                 Customer
+//               </th>
 
-                      <p className="text-xs text-slate-500">
-                        Unit price: {money(item.unitPrice)}
-                      </p>
+//               <th className="px-6 py-4">
+//                 Order information
+//               </th>
 
-                    </div>
+//               <th className="px-6 py-4">
+//                 Location
+//               </th>
 
-                  ))}
+//               <th className="px-6 py-4">
+//                 Total
+//               </th>
 
-                </td>
+//               <th className="px-6 py-4">
+//                 Status
+//               </th>
 
+//               <th className="px-6 py-4">
+//                 Delivered by
+//               </th>
 
-                {/* ============================================
-                    LOCATION
-                ============================================= */}
+//               <th className="px-6 py-4">
+//                 Invoice
+//               </th>
 
-                <td className="px-6 py-5 text-slate-600">
+//             </tr>
 
-                  {order.location}
+//           </thead>
 
-                </td>
 
+//           {/* ==================================================
+//               9.2.2 TABLE BODY
+//           =================================================== */}
 
-                {/* ============================================
-                    TOTAL
-                ============================================= */}
+//           <tbody className="divide-y divide-slate-100">
 
-                <td className="px-6 py-5 font-semibold">
+//             {orders.map((order) => (
 
-                  {money(order.total)}
+//               <tr
+//                 key={order.id}
+//                 className="hover:bg-slate-50"
+//               >
 
-                </td>
 
+//                 {/* ============================================
+//                     CUSTOMER
+//                 ============================================= */}
 
-                {/* ============================================
-                    ORDER STATUS
-                ============================================= */}
+//                 <td className="px-6 py-5">
 
-                <td className="px-6 py-5">
+//                   <p className="font-semibold">
+//                     {order.customer}
+//                   </p>
 
-                  <StatusBadge
-                    status={order.status}
-                  />
+//                   <p className="text-xs text-slate-500">
+//                     {order.customerId}
+//                   </p>
 
-                </td>
+//                   <p className="text-xs text-slate-400">
+//                     {order.customerPhone}
+//                   </p>
 
+//                   <p className="text-xs text-slate-400">
+//                     Order {order.id}
+//                   </p>
 
-                {/* ============================================
-                    DELIVERED BY / RIDER
-                ============================================= */}
+//                 </td>
 
-                <td className="px-6 py-5">
 
-                  <RiderDetails
-                    rider={order.rider}
-                  />
+//                 {/* ============================================
+//                     ORDER INFORMATION
+//                 ============================================= */}
 
-                </td>
+//                 <td className="px-6 py-5">
 
+//                   {order.items.map((item, index) => (
 
-                {/* ============================================
-                    INVOICE
-                ============================================= */}
+//                     <div key={index}>
 
-                <td className="px-6 py-5">
+//                       <p className="font-medium">
+//                         {item.productName}
+//                       </p>
 
-                  <button className="font-medium text-emerald-700 hover:underline">
-                    View invoice
-                  </button>
+//                       <p className="text-xs text-slate-500">
+//                         Quantity: {item.quantity}
+//                       </p>
 
-                </td>
+//                       <p className="text-xs text-slate-500">
+//                         Unit price: {money(item.unitPrice)}
+//                       </p>
 
-              </tr>
+//                     </div>
 
-            ))}
+//                   ))}
 
-          </tbody>
+//                 </td>
 
-        </table>
 
-      </div>
+//                 {/* ============================================
+//                     LOCATION
+//                 ============================================= */}
 
-    </div>
-  );
-}
+//                 <td className="px-6 py-5 text-slate-600">
+
+//                   {order.location}
+
+//                 </td>
+
+
+//                 {/* ============================================
+//                     TOTAL
+//                 ============================================= */}
+
+//                 <td className="px-6 py-5 font-semibold">
+
+//                   {money(order.total)}
+
+//                 </td>
+
+
+//                 {/* ============================================
+//                     ORDER STATUS
+//                 ============================================= */}
+
+//                 <td className="px-6 py-5">
+
+//                   <StatusBadge
+//                     status={order.status}
+//                   />
+
+//                 </td>
+
+
+//                 {/* ============================================
+//                     DELIVERED BY / RIDER
+//                 ============================================= */}
+
+//                 <td className="px-6 py-5">
+
+//                   <RiderDetails
+//                     rider={order.rider}
+//                   />
+
+//                 </td>
+
+
+//                 {/* ============================================
+//                     INVOICE
+//                 ============================================= */}
+
+//                 <td className="px-6 py-5">
+
+//                   <button className="font-medium text-emerald-700 hover:underline">
+//                     View invoice
+//                   </button>
+
+//                 </td>
+
+//               </tr>
+
+//             ))}
+
+//           </tbody>
+
+//         </table>
+
+//       </div>
+
+//     </div>
+//   );
+// }
 
 
 // ============================================================
@@ -1032,17 +1020,17 @@ export default function Home() {
 
 
         {/* ====================================================
-            12.2.2 SUMMARY CARDS
+            12.2 SUMMARY CARDS
         ===================================================== */}
 
         <SummaryCards />
 
 
         {/* ====================================================
-            12.2.3 RECENT ORDERS
+            12.3 RECENT ORDERS
         ===================================================== */}
 
-        <RecentOrders />
+        <RecentOrders orders={orders} />
 
 
         {/* ====================================================
