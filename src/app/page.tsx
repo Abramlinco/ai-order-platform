@@ -22,6 +22,12 @@ import RiderDetails, {
 import RecentOrders from "./components/RecentOrders";
 
 import type { Order } from "./types";
+import InvoicePanel from "./components/InvoicePanel";
+// ============================================================
+// COMPONENT IMPORT
+// ============================================================
+
+import ApprovalPanel from "./components/ApprovalPanel";
 // ============================================================
 // 1. TYPE DEFINITIONS
 // ============================================================
@@ -670,308 +676,201 @@ const money = (amount: number) =>
 // 10. INVOICE PANEL
 // ============================================================
 
-function InvoicePanel({
-  order,
-}: {
-  order: Order;
-}) {
-  return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
+// function InvoicePanel({
+//   order,
+// }: {
+//   order: Order;
+// }) {
+//   return (
+//     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
 
 
-      {/* ======================================================
-          10.1 INVOICE HEADER
-      ======================================================= */}
+//       {/* ======================================================
+//           10.1 INVOICE HEADER
+//       ======================================================= */}
 
-      <div className="flex items-center justify-between">
+//       <div className="flex items-center justify-between">
 
-        <div>
+//         <div>
 
-          <p className="text-sm text-slate-500">
-            Selected order
-          </p>
+//           <p className="text-sm text-slate-500">
+//             Selected order
+//           </p>
 
-          <h3 className="text-xl font-bold">
-            Invoice {order.id}
-          </h3>
+//           <h3 className="text-xl font-bold">
+//             Invoice {order.id}
+//           </h3>
 
-        </div>
+//         </div>
 
 
-        <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50">
-          Generate PDF
-        </button>
+//         <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50">
+//           Generate PDF
+//         </button>
 
-      </div>
+//       </div>
 
 
-      {/* ======================================================
-          10.2 CUSTOMER & DELIVERY INFORMATION
-      ======================================================= */}
+//       {/* ======================================================
+//           10.2 CUSTOMER & DELIVERY INFORMATION
+//       ======================================================= */}
 
-      <div className="mt-6 grid gap-4 border-y py-5 sm:grid-cols-2">
+//       <div className="mt-6 grid gap-4 border-y py-5 sm:grid-cols-2">
 
 
-        {/* Customer */}
-        <div>
+//         {/* Customer */}
+//         <div>
 
-          <p className="text-xs uppercase text-slate-400">
-            Customer
-          </p>
+//           <p className="text-xs uppercase text-slate-400">
+//             Customer
+//           </p>
 
-          <p className="mt-1 font-semibold">
-            {order.customer}
-          </p>
+//           <p className="mt-1 font-semibold">
+//             {order.customer}
+//           </p>
 
-          <p className="text-xs text-slate-500">
-            {order.customerId}
-          </p>
+//           <p className="text-xs text-slate-500">
+//             {order.customerId}
+//           </p>
 
-          <p className="text-xs text-slate-500">
-            {order.customerPhone}
-          </p>
+//           <p className="text-xs text-slate-500">
+//             {order.customerPhone}
+//           </p>
 
-        </div>
+//         </div>
 
 
-        {/* Delivery */}
-        <div>
+//         {/* Delivery */}
+//         <div>
 
-          <p className="text-xs uppercase text-slate-400">
-            Delivery location
-          </p>
+//           <p className="text-xs uppercase text-slate-400">
+//             Delivery location
+//           </p>
 
-          <p className="mt-1 font-semibold">
-            {order.location}
-          </p>
+//           <p className="mt-1 font-semibold">
+//             {order.location}
+//           </p>
 
-        </div>
+//         </div>
 
-      </div>
+//       </div>
 
 
-      {/* ======================================================
-          10.3 PRODUCT BREAKDOWN
-      ======================================================= */}
+//       {/* ======================================================
+//           10.3 PRODUCT BREAKDOWN
+//       ======================================================= */}
 
-      <div className="py-5">
+//       <div className="py-5">
 
-        <div className="grid grid-cols-[1fr_auto_auto] gap-6 border-b pb-3 text-xs font-semibold uppercase text-slate-400">
+//         <div className="grid grid-cols-[1fr_auto_auto] gap-6 border-b pb-3 text-xs font-semibold uppercase text-slate-400">
 
-          <span>
-            Item
-          </span>
+//           <span>
+//             Item
+//           </span>
 
-          <span>
-            Qty
-          </span>
+//           <span>
+//             Qty
+//           </span>
 
-          <span>
-            Amount
-          </span>
+//           <span>
+//             Amount
+//           </span>
 
-        </div>
+//         </div>
 
 
-        {order.items.map((item, index) => (
+//         {order.items.map((item, index) => (
 
-          <div
-            key={index}
-            className="grid grid-cols-[1fr_auto_auto] gap-6 py-4"
-          >
+//           <div
+//             key={index}
+//             className="grid grid-cols-[1fr_auto_auto] gap-6 py-4"
+//           >
 
-            <div>
+//             <div>
 
-              <p className="font-semibold">
-                {item.productName}
-              </p>
+//               <p className="font-semibold">
+//                 {item.productName}
+//               </p>
 
-              <p className="text-xs text-slate-500">
-                Unit price: {money(item.unitPrice)}
-              </p>
+//               <p className="text-xs text-slate-500">
+//                 Unit price: {money(item.unitPrice)}
+//               </p>
 
-            </div>
+//             </div>
 
-            <span>
-              {item.quantity}
-            </span>
+//             <span>
+//               {item.quantity}
+//             </span>
 
-            <span className="font-medium">
-              {money(item.subtotal)}
-            </span>
+//             <span className="font-medium">
+//               {money(item.subtotal)}
+//             </span>
 
-          </div>
+//           </div>
 
-        ))}
+//         ))}
 
-      </div>
+//       </div>
 
 
-      {/* ======================================================
-          10.4 INVOICE TOTALS
-      ======================================================= */}
+//       {/* ======================================================
+//           10.4 INVOICE TOTALS
+//       ======================================================= */}
 
-      <div className="border-t pt-4">
+//       <div className="border-t pt-4">
 
 
-        {/* Subtotal */}
-        <div className="flex justify-between py-2 text-sm">
+//         {/* Subtotal */}
+//         <div className="flex justify-between py-2 text-sm">
 
-          <span className="text-slate-500">
-            Subtotal
-          </span>
+//           <span className="text-slate-500">
+//             Subtotal
+//           </span>
 
-          <span>
-            {money(order.subtotal)}
-          </span>
+//           <span>
+//             {money(order.subtotal)}
+//           </span>
 
-        </div>
+//         </div>
 
 
-        {/* Delivery fee */}
-        <div className="flex justify-between py-2 text-sm">
+//         {/* Delivery fee */}
+//         <div className="flex justify-between py-2 text-sm">
 
-          <span className="text-slate-500">
-            Delivery fee
-          </span>
+//           <span className="text-slate-500">
+//             Delivery fee
+//           </span>
 
-          <span>
-            {money(order.deliveryFee)}
-          </span>
+//           <span>
+//             {money(order.deliveryFee)}
+//           </span>
 
-        </div>
+//         </div>
 
 
-        {/* Total */}
-        <div className="mt-3 flex justify-between border-t pt-4 text-lg font-bold">
+//         {/* Total */}
+//         <div className="mt-3 flex justify-between border-t pt-4 text-lg font-bold">
 
-          <span>
-            Total
-          </span>
+//           <span>
+//             Total
+//           </span>
 
-          <span>
-            {money(order.total)}
-          </span>
+//           <span>
+//             {money(order.total)}
+//           </span>
 
-        </div>
+//         </div>
 
-      </div>
+//       </div>
 
-    </div>
-  );
-}
+//     </div>
+//   );
+// }
 
 
 // ============================================================
 // 11. ORDER APPROVAL PANEL
 // ============================================================
-
-function ApprovalPanel({
-  order,
-}: {
-  order: Order;
-}) {
-  return (
-    <div className="rounded-2xl bg-emerald-700 p-6 text-white shadow-sm">
-
-
-      {/* Panel title */}
-
-      <p className="text-sm text-emerald-100">
-        Human approval gate
-      </p>
-
-      <h3 className="mt-2 text-xl font-bold">
-        Order {order.id}
-      </h3>
-
-
-      {/* ======================================================
-          11.1 CUSTOMER
-      ======================================================= */}
-
-      <div className="mt-6">
-
-        <p className="text-xs uppercase text-emerald-200">
-          Customer
-        </p>
-
-        <p className="mt-1 font-semibold">
-          {order.customer}
-        </p>
-
-      </div>
-
-
-      {/* ======================================================
-          11.2 DELIVERY LOCATION
-      ======================================================= */}
-
-      <div className="mt-4">
-
-        <p className="text-xs uppercase text-emerald-200">
-          Delivery
-        </p>
-
-        <p className="mt-1 font-semibold">
-          {order.location}
-        </p>
-
-      </div>
-
-
-      {/* ======================================================
-          11.3 RIDER INFORMATION
-      ======================================================= */}
-
-      <div className="mt-4">
-
-        <p className="text-xs uppercase text-emerald-200">
-          Delivered by
-        </p>
-
-
-        {order.rider ? (
-
-          <>
-
-            <p className="mt-1 font-semibold">
-              {order.rider.name}
-            </p>
-
-            <p className="text-sm text-emerald-100">
-              {order.rider.phone}
-            </p>
-
-            <p className="text-sm text-emerald-100">
-              {order.rider.bike}
-            </p>
-
-          </>
-
-        ) : (
-
-          <p className="mt-1 text-sm text-emerald-100">
-            Rider not assigned
-          </p>
-
-        )}
-
-      </div>
-
-
-      {/* ======================================================
-          11.4 APPROVE ORDER
-      ======================================================= */}
-
-      <button className="mt-8 w-full rounded-xl bg-white px-4 py-3 font-bold text-emerald-700 hover:bg-emerald-50">
-        Approve Order
-      </button>
-
-    </div>
-  );
-}
-
 
 // ============================================================
 // 12. MAIN DASHBOARD
