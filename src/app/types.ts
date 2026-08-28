@@ -16,9 +16,20 @@ export type OrderItem = {
   subtotal: number;
 };
 
+// ============================================================
+// 2. RIDER
+// ============================================================
+
+export type Rider = {
+  id: string;
+  name: string;
+  phone: string;
+  bike: string;
+  status: "Available" | "Busy" | "Offline";
+};
 
 // ============================================================
-// 2. ORDER
+// 3. ORDER
 // ============================================================
 
 export type Order = {
@@ -50,10 +61,5 @@ export type Order = {
     | "Cancelled";
 
   // Assigned rider
-  rider: {
-    id: string;
-    name: string;
-    phone: string;
-    bike: string;
-  } | null;
-};
+rider: Rider | null;
+}

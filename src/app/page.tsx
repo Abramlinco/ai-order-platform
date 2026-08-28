@@ -14,25 +14,16 @@ import { useState } from "react";
 // ============================================================
 
 import DashboardHeader from "./components/DashboardHeader";
-
 import SummaryCards from "./components/SummaryCards";
-
 import StatusBadge, {
   type OrderStatus,
 } from "./components/StatusBadge";
-
-import RiderDetails, {
-  type Rider,
-} from "./components/RiderDetails";
-import RecentOrders from "./components/RecentOrders";
-
-import type { Order } from "./types";
+import RiderDetails from "./components/RiderDetails";
 import InvoicePanel from "./components/InvoicePanel";
-// ============================================================
-// COMPONENT IMPORT
-// ============================================================
-
+import RecentOrders from "./components/RecentOrders";
 import ApprovalPanel from "./components/ApprovalPanel";
+
+import type { Order, Rider } from "./types";
 // ============================================================
 // 1. TYPE DEFINITIONS
 // ============================================================
@@ -79,6 +70,7 @@ const riders: Rider[] = [
     name: "Daniel",
     phone: "0806 123 xxx7",
     bike: "Bajaj Boxer • ABJ-218-KD",
+    status: "Available",
   },
 
   {
@@ -86,6 +78,7 @@ const riders: Rider[] = [
     name: "Michael",
     phone: "0803 456 xxx0",
     bike: "Honda CG125 • ABJ-452-KD",
+    status: "Busy",
   },
 ];
 
@@ -99,7 +92,7 @@ const riders: Rider[] = [
 // Later, orders will come from our backend/database.
 // ============================================================
 
-const orders: Order[] = [
+const initialOrders: Order[] = [
   {
     id: "#1042",
 
@@ -890,8 +883,38 @@ export default function Home() {
 // 6. SELECTED ORDER STATE
 // ============================================================
 
-const [selectedOrder, setSelectedOrder] = useState(orders[0]);
+// ============================================================
+// 6. ORDER STATE
+// ============================================================
 
+const [orders, setOrders] = useState<Order[]>(initialOrders);
+
+const [selectedOrder, setSelectedOrder] = useState(initialOrders[0]);
+
+// ============================================================
+// 7. ORDER APPROVAL LOGIC
+// ============================================================
+
+const handleApproveOrder = () => {
+
+  // Update the selected order
+  setSelectedOrder({
+    ...selectedOrder,
+    status: "Finding rider",
+  });
+
+  // Update the order inside the main orders list
+  setOrders((currentOrders) =>
+    currentOrders.map((order) =>
+      order.id === selectedOrder.id
+        ? {
+            ...order,
+            status: "Finding rider",
+          }
+        : order
+    )
+  );
+};
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -959,9 +982,10 @@ const [selectedOrder, setSelectedOrder] = useState(orders[0]);
 
 
           {/* Approval */}
-          <ApprovalPanel
-            order={selectedOrder}
-          />
+                <ApprovalPanel
+        order={selectedOrder}
+        onApproveOrder={handleApproveOrder}
+/>
 
         </div>
 

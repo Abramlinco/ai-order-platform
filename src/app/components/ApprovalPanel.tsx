@@ -11,11 +11,18 @@ import type { Order } from "../types";
 // 1. APPROVAL PANEL COMPONENT
 // ============================================================
 
+// ============================================================
+// 2. APPROVAL PANEL COMPONENT
+// ============================================================
+
 export default function ApprovalPanel({
   order,
+  onApproveOrder,
 }: {
   order: Order;
+  onApproveOrder: () => void;
 }) {
+
   return (
     <div className="rounded-2xl bg-emerald-700 p-6 text-white">
 
@@ -84,7 +91,21 @@ export default function ApprovalPanel({
             : "Rider not assigned"}
 
         </p>
+{/* ======================================================
+    1.5 CURRENT ORDER STATUS
+======================================================= */}
 
+<div className="mt-5">
+
+  <p className="text-xs uppercase tracking-wide text-emerald-100">
+    Order status
+  </p>
+
+  <p className="mt-1 font-semibold">
+    {order.status}
+  </p>
+
+</div>
       </div>
 
 
@@ -93,11 +114,12 @@ export default function ApprovalPanel({
       ======================================================= */}
 
       <button
-        type="button"
-        className="mt-8 w-full rounded-lg bg-white px-4 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50"
-      >
-        Approve Order
-      </button>
+  type="button"
+  onClick={onApproveOrder}
+  className="mt-8 w-full rounded-lg bg-white px-4 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50"
+>
+  Approve Order
+</button>
 
     </div>
   );
