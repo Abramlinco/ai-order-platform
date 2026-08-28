@@ -3,7 +3,12 @@
 // File: src/app/page.tsx
 // Purpose: Main business-owner dashboard
 // ============================================================
+"use client";
+// ============================================================
+// REACT IMPORTS
+// ============================================================
 
+import { useState } from "react";
 // ============================================================
 // IMPORTS
 // ============================================================
@@ -880,7 +885,12 @@ export default function Home() {
 
   // Currently selected order.
   // Later this will be controlled by the dashboard.
-  const selectedOrder = orders[0];
+
+  // ============================================================
+// 6. SELECTED ORDER STATE
+// ============================================================
+
+const [selectedOrder, setSelectedOrder] = useState(orders[0]);
 
 
   return (
@@ -929,7 +939,10 @@ export default function Home() {
             12.3 RECENT ORDERS
         ===================================================== */}
 
-        <RecentOrders orders={orders} />
+                <RecentOrders
+          orders={orders}
+          onSelectOrder={setSelectedOrder}
+        />
 
 
         {/* ====================================================

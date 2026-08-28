@@ -15,10 +15,16 @@ import RiderDetails from "./RiderDetails";
 // 1. RECENT ORDERS COMPONENT
 // ============================================================
 
+// ============================================================
+// 2. RECENT ORDERS COMPONENT
+// ============================================================
+
 export default function RecentOrders({
   orders,
+  onSelectOrder,
 }: {
   orders: Order[];
+  onSelectOrder: (order: Order) => void;
 }) {
   return (
     <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -113,17 +119,19 @@ export default function RecentOrders({
 
             {orders.map((order) => (
 
-              <tr
-                key={order.id}
-                className="hover:bg-slate-50"
-              >
+              // ============================================================
+// 1.2.2 ORDER ROW
+// ============================================================
 
-
+                    <tr
+                    key={order.id}
+                    onClick={() => onSelectOrder(order)}
+                    className="cursor-pointer hover:bg-slate-50"
+>
+                <td className="px-6 py-5">
                 {/* ============================================
                     1.2.2.1 CUSTOMER
                 ============================================= */}
-
-                <td className="px-6 py-5">
 
                   <p className="font-semibold">
                     {order.customer}
