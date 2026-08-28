@@ -17,13 +17,19 @@ import { useState } from "react";
 // 2. COMPONENT
 // ============================================================
 
-export default function DashboardHeader() {
+type DashboardHeaderProps = {
+  onMenuClick?: () => void;
+};
+
+export default function DashboardHeader({
+  onMenuClick,
+}: DashboardHeaderProps) {
 
   // ==========================================================
   // 2.1 MOBILE MENU STATE
   // ==========================================================
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
   // ==========================================================
@@ -96,7 +102,7 @@ export default function DashboardHeader() {
 
         <button
           type="button"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={onMenuClick}
           className="rounded-md border border-slate-300 p-2 text-slate-700 hover:bg-slate-50 md:hidden"
           aria-label="Toggle navigation menu"
         >
@@ -110,7 +116,7 @@ export default function DashboardHeader() {
           4. MOBILE NAVIGATION
           ====================================================== */}
 
-      {isMenuOpen && (
+      {/* {isMenuOpen && (
         <nav className="border-t border-slate-200 bg-white md:hidden">
 
           <div className="space-y-1 px-4 py-3">
@@ -131,7 +137,7 @@ export default function DashboardHeader() {
           </div>
 
         </nav>
-      )}
+      )} */}
 
     </header>
   );

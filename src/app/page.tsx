@@ -880,7 +880,7 @@ const money = (amount: number) =>
 // ============================================================
 
 export default function Home() {
-
+const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Currently selected order.
   // Later this will be controlled by the dashboard.
 
@@ -987,8 +987,10 @@ return (
 
     <div className="flex min-h-screen">
 
-      <Sidebar />
-
+      <Sidebar
+  isMobileOpen={isMobileMenuOpen}
+  onClose={() => setIsMobileMenuOpen(false)}
+/>
       {/* ======================================================
           12.2 MAIN CONTENT
           ====================================================== */}
@@ -999,7 +1001,9 @@ return (
           12.1 HEADER
       ======================================================= */}
 
-      <DashboardHeader />
+      <DashboardHeader
+  onMenuClick={() => setIsMobileMenuOpen(true)}
+/>
 
 
       {/* ======================================================
@@ -1065,9 +1069,6 @@ return (
         </div>
 
       </section>
-// ============================================================
-// 13. CLOSE OWNER DASHBOARD LAYOUT
-// ============================================================
 
         </main>
 
