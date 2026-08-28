@@ -65,9 +65,9 @@ export default function RecentOrders({
           1.2 ORDERS TABLE
       ======================================================= */}
 
-      <div className="overflow-x-auto">
+      <div className="w-full min-w-0 overflow-x-auto">
 
-        <table className="w-full min-w-[1150px] text-left text-sm">
+        <table className="w-fullw-full min-w-0 overflow-x-auto text-left text-sm">
 
 
           {/* ==================================================

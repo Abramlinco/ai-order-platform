@@ -25,6 +25,11 @@ import ApprovalPanel from "./components/ApprovalPanel";
 
 import type { Order, Rider } from "./types";
 // ============================================================
+// SIDEBAR COMPONENT
+// ============================================================
+
+import Sidebar from "./components/Sidebar";
+// ============================================================
 // 1. TYPE DEFINITIONS
 // ============================================================
 
@@ -64,7 +69,7 @@ type OrderItem = {
 // Later, riders will come from our database/backend.
 // ============================================================
 
-const riders: Rider[] = [
+const initialRiders: Rider[] = [
   {
     id: "RDR-001",
     name: "Daniel",
@@ -157,7 +162,7 @@ const initialOrders: Order[] = [
     status: "Out for delivery",
 
     // Assigned rider
-    rider: riders[1],
+    rider: initialRiders[0],
   },
 
 
@@ -191,7 +196,7 @@ const initialOrders: Order[] = [
     status: "Delivered",
 
     // Assigned rider
-    rider: riders[0],
+    rider: initialRiders[1],
   },
 ];
 
@@ -884,8 +889,10 @@ export default function Home() {
 // ============================================================
 
 // ============================================================
-// 6. ORDER STATE
+// 6. RIDER STATE
 // ============================================================
+
+const [riders, setRiders] = useState<Rider[]>(initialRiders);
 
 const [orders, setOrders] = useState<Order[]>(initialOrders);
 
@@ -897,13 +904,21 @@ const [selectedOrder, setSelectedOrder] = useState(initialOrders[0]);
 
 const handleApproveOrder = () => {
 
-  // Find the first available rider
+  // ==========================================================
+  // 7.1 FIND AN AVAILABLE RIDER
+  // ==========================================================
+
   const availableRider = riders.find(
     (rider) => rider.status === "Available"
   );
 
-  // If no rider is available, keep the order in finding rider
+
+  // ==========================================================
+  // 7.2 NO RIDER AVAILABLE
+  // ==========================================================
+
   if (!availableRider) {
+
     setSelectedOrder({
       ...selectedOrder,
       status: "Finding rider",
@@ -912,17 +927,29 @@ const handleApproveOrder = () => {
     return;
   }
 
-  // Assign the available rider to the order
+
+  // ==========================================================
+  // 7.3 ASSIGN THE RIDER TO THE ORDER
+  // ==========================================================
+
   const updatedOrder: Order = {
     ...selectedOrder,
     status: "Rider assigned",
     rider: availableRider,
   };
 
-  // Update selected order
+
+  // ==========================================================
+  // 7.4 UPDATE SELECTED ORDER
+  // ==========================================================
+
   setSelectedOrder(updatedOrder);
 
-  // Update the main orders list
+
+  // ==========================================================
+  // 7.5 UPDATE ORDERS LIST
+  // ==========================================================
+
   setOrders((currentOrders) =>
     currentOrders.map((order) =>
       order.id === selectedOrder.id
@@ -930,10 +957,43 @@ const handleApproveOrder = () => {
         : order
     )
   );
-};
-  return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
 
+  // ============================================================
+// 7.6 MARK RIDER AS BUSY
+// ============================================================
+
+setRiders((currentRiders) =>
+  currentRiders.map((rider) =>
+    rider.id === availableRider.id
+      ? {
+          ...rider,
+          status: "Busy",
+        }
+      : rider
+  )
+);
+};
+
+  // ============================================================
+// 12. OWNER DASHBOARD LAYOUT
+// ============================================================
+
+return (
+  <div className="min-h-screen bg-slate-50 text-slate-900">
+
+    {/* ========================================================
+        12.1 DESKTOP SIDEBAR
+        ======================================================== */}
+
+    <div className="flex min-h-screen">
+
+      <Sidebar />
+
+      {/* ======================================================
+          12.2 MAIN CONTENT
+          ====================================================== */}
+
+      <main className="min-w-0 flex-1">
 
       {/* ======================================================
           12.1 HEADER
@@ -1005,7 +1065,15 @@ const handleApproveOrder = () => {
         </div>
 
       </section>
+// ============================================================
+// 13. CLOSE OWNER DASHBOARD LAYOUT
+// ============================================================
 
-    </main>
+        </main>
+
+      </div>
+
+    </div>
   );
 }
+   
