@@ -78,7 +78,7 @@ const riders: Rider[] = [
     name: "Michael",
     phone: "0803 456 xxx0",
     bike: "Honda CG125 • ABJ-452-KD",
-    status: "Busy",
+    status: "Available",
   },
 ];
 
@@ -892,30 +892,45 @@ const [orders, setOrders] = useState<Order[]>(initialOrders);
 const [selectedOrder, setSelectedOrder] = useState(initialOrders[0]);
 
 // ============================================================
-// 7. ORDER APPROVAL LOGIC
+// 7. ORDER APPROVAL & RIDER ASSIGNMENT LOGIC
 // ============================================================
 
 const handleApproveOrder = () => {
 
-  // Update the selected order
-  setSelectedOrder({
-    ...selectedOrder,
-    status: "Finding rider",
-  });
+  // Find the first available rider
+  const availableRider = riders.find(
+    (rider) => rider.status === "Available"
+  );
 
-  // Update the order inside the main orders list
+  // If no rider is available, keep the order in finding rider
+  if (!availableRider) {
+    setSelectedOrder({
+      ...selectedOrder,
+      status: "Finding rider",
+    });
+
+    return;
+  }
+
+  // Assign the available rider to the order
+  const updatedOrder: Order = {
+    ...selectedOrder,
+    status: "Rider assigned",
+    rider: availableRider,
+  };
+
+  // Update selected order
+  setSelectedOrder(updatedOrder);
+
+  // Update the main orders list
   setOrders((currentOrders) =>
     currentOrders.map((order) =>
       order.id === selectedOrder.id
-        ? {
-            ...order,
-            status: "Finding rider",
-          }
+        ? updatedOrder
         : order
     )
   );
 };
-
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
 
