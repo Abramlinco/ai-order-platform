@@ -9,65 +9,65 @@ export default function OrdersPage() {
 
   const orders = [
     {
-      id: "#1042",
-      customer: "John Doe",
-      phone: "0802 111 2233",
-      item: "Black Shirt",
-      quantity: 3,
-      location: "Gwarinpa, Abuja",
-      total: 36000,
-      status: "Awaiting approval",
-      rider: "Not assigned",
-      date: "Today",
-    },
+  id: "#1042",
+  customer: "John Doe",
+  phone: "0802 111 2233",
+  item: "Black Shirt",
+  quantity: 3,
+  location: "Gwarinpa, Abuja",
+  total: 36000,
+  status: "Awaiting approval",
+  rider: "Not assigned",
+  date: "today",
+},
+{
+  id: "#1041",
+  customer: "Mary Smith",
+  phone: "0804 222 3344",
+  item: "Sneakers",
+  quantity: 2,
+  location: "Wuse 2, Abuja",
+  total: 55000,
+  status: "Out for delivery",
+  rider: "Daniel",
+  date: "today",
+},
     {
-      id: "#1041",
-      customer: "Mary Smith",
-      phone: "0804 222 3344",
-      item: "Sneakers",
-      quantity: 2,
-      location: "Wuse 2, Abuja",
-      total: 55000,
-      status: "Out for delivery",
-      rider: "Daniel",
-      date: "Today",
-    },
+  id: "#1040",
+  customer: "David James",
+  phone: "0805 333 4455",
+  item: "Hoodie",
+  quantity: 1,
+  location: "Maitama, Abuja",
+  total: 18500,
+  status: "Delivered",
+  rider: "Michael",
+  date: "yesterday",
+},
+{
+  id: "#1039",
+  customer: "Mary Okafor",
+  phone: "0806 444 5566",
+  item: "White Shirt",
+  quantity: 2,
+  location: "Gudu, Abuja",
+  total: 42000,
+  status: "Out for delivery",
+  rider: "Daniel",
+  date: "yesterday",
+},
     {
-      id: "#1040",
-      customer: "David James",
-      phone: "0805 333 4455",
-      item: "Hoodie",
-      quantity: 1,
-      location: "Maitama, Abuja",
-      total: 18500,
-      status: "Delivered",
-      rider: "Michael",
-      date: "Yesterday",
-    },
-    {
-      id: "#1039",
-      customer: "Mary Okafor",
-      phone: "0806 444 5566",
-      item: "White Shirt",
-      quantity: 2,
-      location: "Gudu, Abuja",
-      total: 42000,
-      status: "Out for delivery",
-      rider: "Daniel",
-      date: "Yesterday",
-    },
-    {
-      id: "#1038",
-      customer: "Emeka Nwachukwu",
-      phone: "0807 555 6677",
-      item: "Polo Shirt",
-      quantity: 1,
-      location: "Kubwa, Abuja",
-      total: 23000,
-      status: "Cancelled",
-      rider: "—",
-      date: "May 19",
-    },
+  id: "#1038",
+  customer: "Emeka Nwachukwu",
+  phone: "0807 555 6677",
+  item: "Polo Shirt",
+  quantity: 1,
+  location: "Kubwa, Abuja",
+  total: 23000,
+  status: "Cancelled",
+  rider: "—",
+  date: "older",
+},
   ];
 
   const filteredOrders = useMemo(() => {
@@ -81,9 +81,16 @@ export default function OrdersPage() {
         statusFilter === "All statuses" ||
         order.status === statusFilter;
 
-      const matchesDate =
-        dateFilter === "All dates" ||
-        order.date === dateFilter;
+        const matchesDate =
+  dateFilter === "All dates" ||
+  (dateFilter === "Today" && order.date === "today") ||
+  (dateFilter === "Yesterday" && order.date === "yesterday") ||
+  (dateFilter === "This week" &&
+    (order.date === "today" || order.date === "yesterday")) ||
+  (dateFilter === "This month" &&
+    (order.date === "today" ||
+      order.date === "yesterday" ||
+      order.date === "older"));
 
       return matchesSearch && matchesStatus && matchesDate;
     });
@@ -140,92 +147,7 @@ export default function OrdersPage() {
               </p>
             </div>
           </div>
-
-          {/* -----------------------------------------------------
-              2.2 SEARCH & FILTERS
-          ----------------------------------------------------- */}
-
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center">
-            
-            {/* Search */}
-            <div className="min-w-0 flex-1">
-              <label htmlFor="order-search" className="sr-only">
-                Search orders
-              </label>
-
-              <input
-                id="order-search"
-                type="search"
-                placeholder="Search orders..."
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-
-            {/* Status */}
-            <select
-              aria-label="Filter by status"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-              defaultValue="all"
-            >
-              <option value="all">
-                All statuses
-              </option>
-
-              <option value="pending">
-                Pending approval
-              </option>
-
-              <option value="delivery">
-                Out for delivery
-              </option>
-
-              <option value="delivered">
-                Delivered
-              </option>
-
-              <option value="cancelled">
-                Cancelled
-              </option>
-            </select>
-
-            {/* Date */}
-            <select
-              aria-label="Filter by date"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-              defaultValue="all"
-            >
-              <option value="all">
-                All dates
-              </option>
-
-              <option value="today">
-                Today
-              </option>
-
-              <option value="week">
-                This week
-              </option>
-
-              <option value="month">
-                This month
-              </option>
-            </select>
-          </div>
-
-        <div className="border-b border-slate-200 px-6 py-5">
-  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-    <div>
-      <h2 className="text-xl font-bold text-slate-900">
-        All Orders
-      </h2>
-
-      <p className="mt-1 text-sm text-slate-500">
-        View and manage all customer orders.
-      </p>
-    </div>
-  </div>
-</div>
-
+          
 {/* FILTERS */}
 <div className="border-b border-slate-200 px-6 py-5">
   <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_200px_160px]">
