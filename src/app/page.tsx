@@ -469,11 +469,6 @@ return (
 
         </div>
       </nav>
-
-      {/* MOBILE BOTTOM NAVIGATION */}
-      <nav>
-        ...
-      </nav>
     </div>
   </div>
 );
