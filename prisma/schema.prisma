@@ -1,0 +1,179 @@
+// ================================================================
+// ORDERPILOT — DATABASE FOUNDATION
+// File: prisma/schema.prisma
+// Purpose: Core business data structure
+// ================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ================================================================
+// 1. CUSTOMER
+// ================================================================
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+
+  orders    Order[]
+  feedback  Feedback[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// ================================================================
+// 2. PRODUCT
+// ================================================================
+
+model Product {
+  id        String      @id @default(uuid())
+  name      String
+  category  String
+  price     Int
+  stock     Int         @default(0)
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// ================================================================
+// 3. RIDER
+// ================================================================
+
+model Rider {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  bike      String
+  status    RiderStatus @default(Available)
+
+  orders    Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RiderStatus {
+  Available
+  Busy
+  Offline
+}
+
+
+// ================================================================
+// 4. ORDER
+// ================================================================
+
+model Order {
+  id            String      @id @default(uuid())
+
+  // Customer
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+
+  // Financial information
+  subtotal      Int
+  deliveryFee   Int
+  total         Int
+
+  // Delivery information
+  location      String
+
+  // Current order status
+  status        OrderStatus @default(AwaitingApproval)
+
+  // Assigned rider
+  riderId       String?
+  rider         Rider?      @relation(fields: [riderId], references: [id])
+
+  // Delivery OTP
+  deliveryOtpHash String?
+  otpVerifiedAt   DateTime?
+
+  // Products in this order
+  items         OrderItem[]
+
+  // Customer feedback after delivery
+  feedback      Feedback?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([customerId])
+  @@index([riderId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+
+enum OrderStatus {
+  AwaitingApproval
+  FindingRider
+  RiderAssigned
+  OutForDelivery
+  Delivered
+  Cancelled
+}
+
+
+// ================================================================
+// 5. ORDER ITEM
+// ================================================================
+
+model OrderItem {
+  id          String  @id @default(uuid())
+
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+
+  // Product snapshot at time of order
+  productName String
+  quantity    Int
+  unitPrice   Int
+  subtotal    Int
+
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+
+// ================================================================
+// 6. CUSTOMER FEEDBACK
+// ================================================================
+
+model Feedback {
+  id          String   @id @default(uuid())
+
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  rating      Int
+  comment     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([createdAt])
+}
