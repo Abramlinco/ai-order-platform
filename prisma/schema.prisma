@@ -99,9 +99,13 @@ model Order {
   riderId       String?
   rider         Rider?      @relation(fields: [riderId], references: [id])
 
-  // Delivery OTP
-  deliveryOtpHash String?
-  otpVerifiedAt   DateTime?
+ // Delivery OTP
+deliveryOtpHash      String?
+deliveryOtpExpiresAt DateTime?
+otpVerifiedAt        DateTime?
+
+// Customer feedback workflow
+feedbackRequestedAt  DateTime?
 
   // Products in this order
   items         OrderItem[]
