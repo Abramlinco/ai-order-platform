@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Product = {
   id: string;
@@ -12,6 +13,7 @@ type Product = {
 };
 
 export default function ProductsPage() {
+    const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All categories");
   const [products, setProducts] = useState<Product[]>([
@@ -59,6 +61,20 @@ export default function ProductsPage() {
 
   const [showAddProduct, setShowAddProduct] = useState(false);
 const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+useEffect(() => {
+  if (searchParams.get("add") === "true") {
+    setEditingProduct(null);
+
+    setNewProduct({
+      name: "",
+      category: "",
+      price: "",
+      stock: "",
+    });
+
+    setShowAddProduct(true);
+  }
+}, [searchParams]);
 
   const [newProduct, setNewProduct] = useState({
     name: "",

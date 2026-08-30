@@ -3,70 +3,26 @@
 // File: src/app/page.tsx
 // Purpose: Main business-owner dashboard
 // ============================================================
+
 "use client";
+
 // ============================================================
-// REACT IMPORTS
+// 1. IMPORTS
 // ============================================================
 
-import { useState } from "react";
-// ============================================================
-// IMPORTS
-// ============================================================
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import DashboardHeader from "./components/DashboardHeader";
 import SummaryCards from "./components/SummaryCards";
-import StatusBadge, {
-  type OrderStatus,
-} from "./components/StatusBadge";
-import RiderDetails from "./components/RiderDetails";
 import InvoicePanel from "./components/InvoicePanel";
 import RecentOrders from "./components/RecentOrders";
 import ApprovalPanel from "./components/ApprovalPanel";
-
+import DashboardAnalytics from "./components/DashboardAnalytics";
 import type { Order, Rider } from "./types";
-// ============================================================
-// SIDEBAR COMPONENT
-// ============================================================
 
-import Sidebar from "./components/Sidebar";
-// ============================================================
-// 1. TYPE DEFINITIONS
-// ============================================================
-
-// Available order statuses in the system.
-// type OrderStatus =
-//   | "Awaiting approval"
-//   | "Finding rider"
-//   | "Rider assigned"
-//   | "Out for delivery"
-//   | "Delivered"
-//   | "Cancelled";
-
-
-// Rider information.
-// type Rider = {
-//   id: string;
-//   name: string;
-//   phone: string;
-//   bike: string;
-// };
-
-
-// Product information inside an order.
-type OrderItem = {
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  subtotal: number;
-};
 
 // ============================================================
 // 2. MOCK RIDER DATA
-// ============================================================
-//
-// IMPORTANT:
-// This is temporary data.
-// Later, riders will come from our database/backend.
 // ============================================================
 
 const initialRiders: Rider[] = [
@@ -91,22 +47,15 @@ const initialRiders: Rider[] = [
 // ============================================================
 // 3. MOCK ORDER DATA
 // ============================================================
-//
-// IMPORTANT:
-// These are temporary orders for UI development.
-// Later, orders will come from our backend/database.
-// ============================================================
 
 const initialOrders: Order[] = [
   {
     id: "#1042",
 
-    // Customer
     customer: "John",
     customerId: "CUS-10042",
     customerPhone: "0802 111 2233",
 
-    // Products
     items: [
       {
         productName: "Black Shirt",
@@ -116,31 +65,24 @@ const initialOrders: Order[] = [
       },
     ],
 
-    // Financials
     subtotal: 30000,
     deliveryFee: 6000,
     total: 36000,
 
-    // Delivery
     location: "Gwarinpa, Abuja",
 
-    // Status
     status: "Awaiting approval",
 
-    // No rider yet
     rider: null,
   },
-
 
   {
     id: "#1041",
 
-    // Customer
     customer: "Mary",
     customerId: "CUS-10041",
     customerPhone: "0804 222 3344",
 
-    // Products
     items: [
       {
         productName: "Sneakers",
@@ -150,31 +92,24 @@ const initialOrders: Order[] = [
       },
     ],
 
-    // Financials
     subtotal: 50000,
     deliveryFee: 5000,
     total: 55000,
 
-    // Delivery
     location: "Wuse 2, Abuja",
 
-    // Status
     status: "Out for delivery",
 
-    // Assigned rider
     rider: initialRiders[0],
   },
-
 
   {
     id: "#1040",
 
-    // Customer
     customer: "David",
     customerId: "CUS-10040",
     customerPhone: "0805 333 4455",
 
-    // Products
     items: [
       {
         productName: "Hoodie",
@@ -184,114 +119,296 @@ const initialOrders: Order[] = [
       },
     ],
 
-    // Financials
     subtotal: 18000,
     deliveryFee: 4000,
     total: 22000,
 
-    // Delivery
     location: "Maitama, Abuja",
 
-    // Status
     status: "Delivered",
 
-    // Assigned rider
     rider: initialRiders[1],
   },
 ];
 
 
 // ============================================================
-// 4. UTILITY FUNCTIONS
-// ============================================================
-
-// Formats numbers as Nigerian Naira.
-const money = (amount: number) =>
-  `₦${amount.toLocaleString("en-NG")}`;
-
-
-// ============================================================
-// 5. STATUS BADGE COMPONENT
-// ============================================================
-
-// ============================================================
-// 11. ORDER APPROVAL PANEL
-// ============================================================
-
-// ============================================================
-// 12. MAIN DASHBOARD
+// 4. MAIN DASHBOARD
 // ============================================================
 
 export default function Home() {
-const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // Currently selected order.
-  // Later this will be controlled by the dashboard.
 
-  // ============================================================
-// 6. SELECTED ORDER STATE
-// ============================================================
-
-// ============================================================
-// 6. RIDER STATE
-// ============================================================
-
-const [riders, setRiders] = useState<Rider[]>(initialRiders);
-
-const [orders, setOrders] = useState<Order[]>(initialOrders);
-
-const [selectedOrder, setSelectedOrder] = useState(initialOrders[0]);
-
-// ============================================================
-// 7. ORDER APPROVAL & RIDER ASSIGNMENT LOGIC
-// ============================================================
-
-const handleApproveOrder = () => {
+  const router = useRouter();
 
   // ==========================================================
-  // 7.1 FIND AN AVAILABLE RIDER
+// 4.0 SMART TIME-BASED GREETING
+// ==========================================================
+
+const [currentHour, setCurrentHour] = useState<number | null>(null);
+
+useEffect(() => {
+  const updateTime = () => {
+    setCurrentHour(new Date().getHours());
+  };
+
+  updateTime();
+
+  const interval = window.setInterval(updateTime, 60_000);
+
+  return () => {
+    window.clearInterval(interval);
+  };
+}, []);
+
+const isNight =
+  currentHour !== null &&
+  (currentHour >= 21 || currentHour < 5);
+
+const greeting =
+  currentHour === null
+    ? "Good morning"
+    : currentHour >= 5 && currentHour < 12
+      ? "Good morning"
+      : currentHour >= 12 && currentHour < 17
+        ? "Good afternoon"
+        : currentHour >= 17 && currentHour < 21
+          ? "Good evening"
+          : "Good night";
+
+const greetingEmoji =
+  currentHour === null
+    ? "👋"
+    : currentHour >= 5 && currentHour < 12
+      ? "🌅"
+      : currentHour >= 12 && currentHour < 17
+        ? "☀️"
+        : currentHour >= 17 && currentHour < 21
+          ? "🌇"
+          : "🌙";
+
+  // ==========================================================
+  // 4.1 STATE
   // ==========================================================
 
-  const availableRider = riders.find(
-    (rider) => rider.status === "Available"
-  );
+  const [riders, setRiders] =
+    useState<Rider[]>(initialRiders);
+
+  const [orders, setOrders] =
+    useState<Order[]>(initialOrders);
+
+  const [selectedOrder, setSelectedOrder] =
+    useState<Order>(initialOrders[0]);
+
+  const [isMoreOpen, setIsMoreOpen] =
+    useState(false);
+
+  const [isQuickActionsOpen, setIsQuickActionsOpen] =
+    useState(false);
 
 
   // ==========================================================
-  // 7.2 NO RIDER AVAILABLE
+  // 5. NORMAL NAVIGATION HELPERS
   // ==========================================================
 
-  if (!availableRider) {
+  const goToOrders = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
 
-    setSelectedOrder({
-      ...selectedOrder,
-      status: "Finding rider",
-    });
-
-    return;
-  }
+    router.push("/orders");
+  };
 
 
-  // ==========================================================
-  // 7.3 ASSIGN THE RIDER TO THE ORDER
-  // ==========================================================
+  const goToPendingApproval = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
 
-  const updatedOrder: Order = {
-    ...selectedOrder,
-    status: "Rider assigned",
-    rider: availableRider,
+    router.push("/pending-approval");
+  };
+
+
+  const goToReports = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/Reports");
+  };
+
+
+  const goToRiders = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/riders");
+  };
+
+
+  const goToProducts = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/Products");
+  };
+
+
+  const goToInvoice = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/Invoice");
   };
 
 
   // ==========================================================
-  // 7.4 UPDATE SELECTED ORDER
+  // 6. DIRECT ADD ACTIONS
+  //
+  // These are ONLY used by the mobile + Quick Actions menu.
+  //
+  // They open the relevant page in ADD mode instead of sending
+  // the owner to the normal list page first.
   // ==========================================================
+
+  const goToAddProduct = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/Products?add=1");
+  };
+
+
+  const goToAddRider = () => {
+    setIsQuickActionsOpen(false);
+    setIsMoreOpen(false);
+
+    router.push("/riders?add=1");
+  };
+
+
+  // ==========================================================
+  // 7. ORDER SELECTION
+  // ==========================================================
+
+  const handleSelectOrder = (order: Order) => {
+    setSelectedOrder(order);
+  };
+
+
+  // ==========================================================
+  // 8. ORDER APPROVAL & RIDER ASSIGNMENT
+  // ==========================================================
+
+  const handleApproveOrder = () => {
+
+    // ========================================================
+    // 8.1 FIND AVAILABLE RIDER
+    // ========================================================
+
+    const availableRider = riders.find(
+      (rider) => rider.status === "Available"
+    );
+
+
+    // ========================================================
+    // 8.2 NO RIDER AVAILABLE
+    // ========================================================
+
+    if (!availableRider) {
+
+      const updatedOrder: Order = {
+        ...selectedOrder,
+        status: "Finding rider",
+      };
+
+
+      setSelectedOrder(updatedOrder);
+
+
+      setOrders((currentOrders) =>
+        currentOrders.map((order) =>
+          order.id === selectedOrder.id
+            ? updatedOrder
+            : order
+        )
+      );
+
+
+      return;
+    }
+
+
+    // ========================================================
+    // 8.3 ASSIGN RIDER
+    // ========================================================
+
+    const updatedOrder: Order = {
+      ...selectedOrder,
+      status: "Rider assigned",
+      rider: availableRider,
+    };
+
+
+    // ========================================================
+    // 8.4 UPDATE SELECTED ORDER
+    // ========================================================
+
+    setSelectedOrder(updatedOrder);
+
+
+    // ========================================================
+    // 8.5 UPDATE ORDERS
+    // ========================================================
+
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order.id === selectedOrder.id
+          ? updatedOrder
+          : order
+      )
+    );
+
+
+    // ========================================================
+    // 8.6 MARK RIDER BUSY
+    // ========================================================
+
+    setRiders((currentRiders) =>
+      currentRiders.map((rider) =>
+        rider.id === availableRider.id
+          ? {
+              ...rider,
+              status: "Busy",
+            }
+          : rider
+      )
+    );
+  };
+
+// ==========================================================
+// 7.7 DECLINE ORDER
+// ==========================================================
+
+const handleDeclineOrder = (reason: string) => {
+
+  // ========================================================
+  // UPDATE THE SELECTED ORDER
+  // ========================================================
+
+  const updatedOrder: Order = {
+    ...selectedOrder,
+
+    status: "Cancelled",
+  };
+
+
+  // ========================================================
+  // UPDATE SELECTED ORDER
+  // ========================================================
 
   setSelectedOrder(updatedOrder);
 
 
-  // ==========================================================
-  // 7.5 UPDATE ORDERS LIST
-  // ==========================================================
+  // ========================================================
+  // UPDATE ORDERS LIST
+  // ========================================================
 
   setOrders((currentOrders) =>
     currentOrders.map((order) =>
@@ -301,176 +418,726 @@ const handleApproveOrder = () => {
     )
   );
 
-  // ============================================================
-// 7.6 MARK RIDER AS BUSY
-// ============================================================
 
-setRiders((currentRiders) =>
-  currentRiders.map((rider) =>
-    rider.id === availableRider.id
-      ? {
-          ...rider,
-          status: "Busy",
-        }
-      : rider
-  )
-);
+  // ========================================================
+  // TEMPORARY DEVELOPMENT LOG
+  //
+  // Later this becomes the payload sent to the AI/command
+  // layer and then to the customer communication system.
+  // ========================================================
+
+  console.log(
+    `Order ${selectedOrder.id} declined.`,
+    {
+      reason,
+      customer: selectedOrder.customer,
+      orderId: selectedOrder.id,
+    }
+  );
 };
-
   // ============================================================
-// 12. OWNER DASHBOARD LAYOUT
-// ============================================================
+  // 9. DASHBOARD UI
+  // ============================================================
 
-return (
-  <div className="min-h-screen bg-slate-50 text-slate-900">
+  return (
+    <div
+  className={`min-h-screen transition-colors duration-700 ${
+    isNight
+      ? "bg-slate-950 text-slate-100"
+      : "bg-slate-50 text-slate-900"
+  }`}
+>
 
-    {/* ========================================================
-        12.1 DESKTOP SIDEBAR
-        ======================================================== */}
 
-    <div className="flex min-h-screen">
-
-      <Sidebar
-  isMobileOpen={isMobileMenuOpen}
-  onClose={() => setIsMobileMenuOpen(false)}
-/>
       {/* ======================================================
-          12.2 MAIN CONTENT
+          MAIN DASHBOARD CONTENT
+
+          Sidebar and DashboardHeader are intentionally NOT
+          rendered here.
+
+          They are already provided globally by AppShell.
           ====================================================== */}
 
-      <main className="min-w-0 flex-1 pb-24 lg:pb-0">
+      <main className="min-w-0 pb-24 lg:pb-0">
 
-            {/* ======================================================
-                12.1 HEADER
-            ======================================================= */}
+        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 
-            <DashboardHeader
-        onMenuClick={() => setIsMobileMenuOpen(true)}
-      />
+
+          {/* ==================================================
+              9.1 GREETING
+              ================================================== */}
+
+          <div className="mb-8">
+
+           <h2 className="text-3xl font-bold tracking-tight">
+  {greeting} {greetingEmoji}
+</h2>
+
+<p
+  className={`mt-1 transition-colors duration-700 ${
+    isNight
+      ? "text-slate-400"
+      : "text-slate-500"
+  }`}
+>
+  Here&apos;s what&apos;s happening with your orders today.
+</p>
+
+          </div>
+
+
+          {/* ==================================================
+              9.2 SUMMARY CARDS
+              ================================================== */}
+
+          <SummaryCards />
+
+
+          {/* ==================================================
+              9.3 QUICK DASHBOARD SHORTCUTS
+              ================================================== */}
+
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+
+            {/* ==================================================
+                ORDERS
+                ================================================== */}
+
+            <button
+              type="button"
+              onClick={goToOrders}
+              className="rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+
+              <p className="text-xs font-medium text-slate-500">
+                Orders
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                View orders →
+              </p>
+
+            </button>
+
+
+            {/* ==================================================
+                APPROVALS
+                ================================================== */}
+
+            <button
+              type="button"
+              onClick={goToPendingApproval}
+              className="rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+
+              <p className="text-xs font-medium text-slate-500">
+                Approvals
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                Review pending →
+              </p>
+
+            </button>
+
+
+            {/* ==================================================
+                PRODUCTS
+                ================================================== */}
+
+            <button
+              type="button"
+              onClick={goToProducts}
+              className="rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+
+              <p className="text-xs font-medium text-slate-500">
+                Products
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                Manage products →
+              </p>
+
+            </button>
+
+
+            {/* ==================================================
+                REPORTS
+                ================================================== */}
+
+            <button
+              type="button"
+              onClick={goToReports}
+              className="rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+
+              <p className="text-xs font-medium text-slate-500">
+                Reports
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                View performance →
+              </p>
+
+            </button>
+
+          </div>
+
+
+          {/* ==================================================
+              9.4 RECENT ORDERS
+              ================================================== */}
+
+          <RecentOrders
+            orders={orders}
+            onSelectOrder={handleSelectOrder}
+          />
+
+{/* ==================================================
+    9.5 DASHBOARD ANALYTICS
+    ================================================== */}
+            <DashboardAnalytics
+                orders={orders}
+              />
+
+          {/* ==================================================
+              9.6 LOWER DASHBOARD
+              ================================================== */}
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+
+
+            {/* =================================================
+                INVOICE
+                ================================================= */}
+
+            <InvoicePanel
+              order={selectedOrder}
+            />
+
+
+            {/* =================================================
+                HUMAN APPROVAL
+                ================================================= */}
+
+            <ApprovalPanel
+  order={selectedOrder}
+  onApproveOrder={handleApproveOrder}
+  onDeclineOrder={handleDeclineOrder}
+/>
+
+          </div>
+
+
+          {/* ==================================================
+              9.6 DASHBOARD INFORMATION
+              ================================================== */}
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+
+
+            {/* =================================================
+                BUSINESS ACTIVITY
+                ================================================= */}
+
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+
+              <h3 className="text-base font-semibold">
+                Business activity
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Quick access to important business areas.
+              </p>
+
+
+              <div className="mt-5 space-y-2">
+
+
+                <button
+                  type="button"
+                  onClick={goToOrders}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+                >
+                  <span>Orders</span>
+                  <span className="text-slate-400">→</span>
+                </button>
+
+
+                <button
+                  type="button"
+                  onClick={goToRiders}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+                >
+                  <span>Riders</span>
+                  <span className="text-slate-400">→</span>
+                </button>
+
+
+                <button
+                  type="button"
+                  onClick={goToInvoice}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+                >
+                  <span>Invoices</span>
+                  <span className="text-slate-400">→</span>
+                </button>
+
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                CUSTOMER INSIGHTS
+                ================================================= */}
+
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+
+              <h3 className="text-base font-semibold">
+                Customer insights
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Customer activity and feedback will appear here.
+              </p>
+
+
+              <div className="mt-5 rounded-xl bg-slate-50 p-4">
+
+                <p className="text-sm font-medium text-slate-700">
+                  Customer feedback
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Feedback from customers will become an important
+                  part of the business report as the system grows.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                RIDER PERFORMANCE
+                ================================================= */}
+
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+
+              <h3 className="text-base font-semibold">
+                Rider performance
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Track delivery activity and rider performance.
+              </p>
+
+
+              <div className="mt-5 space-y-3">
+
+                {riders.map((rider) => {
+
+                  const deliveryCount = orders.filter(
+                    (order) =>
+                      order.rider?.id === rider.id
+                  ).length;
+
+
+                  return (
+                    <div
+                      key={rider.id}
+                      className="flex items-center justify-between rounded-xl bg-slate-50 p-3"
+                    >
+
+                      <div>
+
+                        <p className="text-sm font-semibold">
+                          {rider.name}
+                        </p>
+
+                        <p className="text-xs text-slate-500">
+                          {rider.status}
+                        </p>
+
+                      </div>
+
+
+                      <div className="text-right">
+
+                        <p className="text-sm font-bold">
+                          {deliveryCount}
+                        </p>
+
+                        <p className="text-xs text-slate-500">
+                          deliveries
+                        </p>
+
+                      </div>
+
+                    </div>
+                  );
+
+                })}
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+      </main>
 
 
       {/* ======================================================
-          12.2 MAIN CONTENT
-      ======================================================= */}
+          10. MOBILE BOTTOM NAVIGATION
+          ====================================================== */}
 
-      <section className="mx-auto max-w-7xl px-6 py-8">
-
-
-        {/* ====================================================
-            12.2.1 GREETING
-        ===================================================== */}
-
-        <div className="mb-8">
-
-          <h2 className="text-3xl font-bold">
-            Good morning 👋
-          </h2>
-
-          <p className="mt-1 text-slate-500">
-            Here&apos;s what&apos;s happening with your orders today.
-          </p>
-
-        </div>
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur-md lg:hidden">
 
 
-        {/* ====================================================
-            12.2 SUMMARY CARDS
-        ===================================================== */}
-
-        <SummaryCards />
-
-
-        {/* ====================================================
-            12.3 RECENT ORDERS
-        ===================================================== */}
-
-                <RecentOrders
-          orders={orders}
-          onSelectOrder={setSelectedOrder}
-        />
-
-
-        {/* ====================================================
-            12.2.4 LOWER DASHBOARD
-        ===================================================== */}
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-
-
-          {/* Invoice */}
-          <InvoicePanel
-            order={selectedOrder}
-          />
-
-
-          {/* Approval */}
-                <ApprovalPanel
-        order={selectedOrder}
-        onApproveOrder={handleApproveOrder}
-        />
-
-        </div>
-
-              </section>
-      </main>
-            {/* ============================================================
-          13. MOBILE BOTTOM NAVIGATION
-          Visible only on small screens.
-          ============================================================ */}
-
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur-md md:hidden">
         <div className="mx-auto flex h-14 max-w-md items-center justify-between">
 
-          {/* Dashboard */}
+
+          {/* =================================================
+              DASHBOARD
+              ================================================= */}
+
           <button
             type="button"
+            onClick={() => {
+              setIsQuickActionsOpen(false);
+              setIsMoreOpen(false);
+              router.push("/");
+            }}
             className="flex min-w-[52px] flex-col items-center justify-center gap-1 text-xs font-medium text-emerald-700"
           >
-            <span className="text-lg">⌂</span>
-            <span>Dashboard</span>
+
+            <span className="text-lg">
+              ⌂
+            </span>
+
+            <span>
+              Dashboard
+            </span>
+
           </button>
 
-          {/* Orders */}
+
+          {/* =================================================
+              ORDERS
+              ================================================= */}
+
           <button
             type="button"
+            onClick={goToOrders}
             className="flex min-w-[52px] flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500"
           >
-            <span className="text-lg">▣</span>
-            <span>Orders</span>
+
+            <span className="text-lg">
+              ▣
+            </span>
+
+            <span>
+              Orders
+            </span>
+
           </button>
 
-          {/* Main action */}
+
+          {/* =================================================
+              PLUS / QUICK ACTIONS
+              ================================================= */}
+
           <button
             type="button"
-            aria-label="Create new order"
-            className="flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full bg-emerald-600 text-2xl font-light text-white shadow-lg ring-4 ring-white"
+            aria-label="Open quick actions"
+            onClick={() => {
+
+              setIsQuickActionsOpen(
+                (current) => !current
+              );
+
+              setIsMoreOpen(false);
+
+            }}
+            className="flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full bg-emerald-600 text-2xl font-light text-white shadow-lg ring-4 ring-white transition hover:bg-emerald-700"
           >
+
             +
+
           </button>
 
-          {/* Riders */}
+
+          {/* =================================================
+              RIDERS
+              ================================================= */}
+
           <button
             type="button"
+            onClick={goToRiders}
             className="flex min-w-[52px] flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500"
           >
-            <span className="text-lg">♙</span>
-            <span>Riders</span>
+
+            <span className="text-lg">
+              ♙
+            </span>
+
+            <span>
+              Riders
+            </span>
+
           </button>
 
-          {/* More */}
+
+          {/* =================================================
+              MORE
+              ================================================= */}
+
           <button
             type="button"
-            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open more options"
+            onClick={() => {
+
+              setIsMoreOpen(
+                (current) => !current
+              );
+
+              setIsQuickActionsOpen(false);
+
+            }}
             className="flex min-w-[52px] flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500"
           >
-            <span className="text-lg">•••</span>
-            <span>More</span>
+
+            <span className="text-lg">
+              •••
+            </span>
+
+            <span>
+              More
+            </span>
+
           </button>
 
         </div>
+
+
+        {/* ==================================================
+            11. QUICK ACTIONS POPUP
+            ================================================== */}
+
+        {isQuickActionsOpen && (
+
+          <div className="absolute bottom-[72px] left-4 right-4 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-slate-200">
+
+
+            <div className="mb-3">
+
+              <h3 className="font-semibold text-slate-900">
+                Quick actions
+              </h3>
+
+              <p className="text-xs text-slate-500">
+                Quickly access common business actions.
+              </p>
+
+            </div>
+
+
+            {/* =================================================
+                IMPORTANT:
+                NEW ORDER HAS BEEN REMOVED.
+
+                Orders are expected to originate from the
+                customer/bot ordering flow rather than being
+                manually created by the business owner.
+                ================================================= */}
+
+            <div className="grid grid-cols-2 gap-2">
+
+
+              {/* =================================================
+                  ADD PRODUCT
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={goToAddProduct}
+                className="rounded-xl bg-slate-50 p-3 text-left text-sm font-medium transition hover:bg-slate-100"
+              >
+                Add product
+              </button>
+
+
+              {/* =================================================
+                  ADD RIDER
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={goToAddRider}
+                className="rounded-xl bg-slate-50 p-3 text-left text-sm font-medium transition hover:bg-slate-100"
+              >
+                Add rider
+              </button>
+
+
+              {/* =================================================
+                  APPROVALS
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={goToPendingApproval}
+                className="rounded-xl bg-slate-50 p-3 text-left text-sm font-medium transition hover:bg-slate-100"
+              >
+                Approvals
+              </button>
+
+
+            </div>
+
+          </div>
+
+        )}
+
+
+        {/* ==================================================
+            12. MORE POPUP
+            ================================================== */}
+
+        {isMoreOpen && (
+
+          <div className="absolute bottom-[72px] left-4 right-4 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-slate-200">
+
+
+            <div className="mb-3">
+
+              <h3 className="font-semibold text-slate-900">
+                More
+              </h3>
+
+              <p className="text-xs text-slate-500">
+                Business sections and tools.
+              </p>
+
+            </div>
+
+
+            <div className="space-y-1">
+
+
+              {/* =================================================
+                  CUSTOMERS
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  setIsMoreOpen(false);
+                  setIsQuickActionsOpen(false);
+
+                  router.push("/customers");
+
+                }}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+              >
+
+                <span>
+                  Customers
+                </span>
+
+                <span>
+                  →
+                </span>
+
+              </button>
+
+
+              {/* =================================================
+                  REPORTS
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={goToReports}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+              >
+
+                <span>
+                  Reports
+                </span>
+
+                <span>
+                  →
+                </span>
+
+              </button>
+
+
+              {/* =================================================
+                  INVOICES
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={goToInvoice}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+              >
+
+                <span>
+                  Invoices
+                </span>
+
+                <span>
+                  →
+                </span>
+
+              </button>
+
+
+              {/* =================================================
+                  SETTINGS
+                  ================================================= */}
+
+              <button
+                type="button"
+                onClick={() => {
+
+                  setIsMoreOpen(false);
+                  setIsQuickActionsOpen(false);
+
+                  router.push("/Settings");
+
+                }}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm hover:bg-slate-50"
+              >
+
+                <span>
+                  Settings
+                </span>
+
+                <span>
+                  →
+                </span>
+
+              </button>
+
+
+            </div>
+
+          </div>
+
+        )}
+
       </nav>
+
     </div>
-  </div>
-);
+  );
 }
-   

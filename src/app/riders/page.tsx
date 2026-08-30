@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Rider = {
   id: string;
@@ -16,6 +17,8 @@ type Rider = {
 };
 
 export default function RidersPage() {
+  const searchParams = useSearchParams();
+
   const [search, setSearch] = useState("");
 
   const [riders, setRiders] = useState<Rider[]>([
@@ -59,8 +62,27 @@ export default function RidersPage() {
 
   const [showRiderModal, setShowRiderModal] = useState(false);
   const [selectedRider, setSelectedRider] = useState<Rider | null>(null);
-const [showViewModal, setShowViewModal] = useState(false);
-const [editingRiderId, setEditingRiderId] = useState<string | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [editingRiderId, setEditingRiderId] = useState<string | null>(null);
+
+  useEffect(() => {
+  if (searchParams.get("add") === "true") {
+    setSelectedRider(null);
+    setEditingRiderId(null);
+
+    setNewRider({
+      name: "",
+      phone: "",
+      location: "",
+      bikeMake: "",
+      bikeModel: "",
+      bikeColour: "",
+      registrationNumber: "",
+    });
+
+    setShowRiderModal(true);
+  }
+}, [searchParams]);
 
   const [newRider, setNewRider] = useState({
     name: "",
