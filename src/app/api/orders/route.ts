@@ -76,70 +76,97 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Validate each order item
-    for (const item of items) {
-      if (
-        !item.productName ||
-        typeof item.quantity !== "number" ||
-        typeof item.unitPrice !== "number" ||
-        item.quantity <= 0 ||
-        item.unitPrice < 0
-      ) {
-        return Response.json(
-          {
-            ok: false,
-            error: "Invalid order item",
+    // 3. Everything inside this transaction succeeds together
+    const order = await prisma.$transaction(async (tx) => {
+      const calculatedItems = [];
+
+      // 4. Check every requested product
+      for (const item of items) {
+        if (
+          !item.productId ||
+          typeof item.quantity !== "number" ||
+          item.quantity <= 0
+        ) {
+          throw new Error("INVALID_ORDER_ITEM");
+        }
+
+        const product = await tx.product.findUnique({
+          where: {
+            id: item.productId,
           },
-          { status: 400 }
-        );
+        });
+
+        if (!product) {
+          throw new Error("PRODUCT_NOT_FOUND");
+        }
+
+        // Make sure enough stock exists
+        const stockUpdate = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stock: {
+              gte: item.quantity,
+            },
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        if (stockUpdate.count === 0) {
+          throw new Error(`NOT_ENOUGH_STOCK:${product.name}`);
+        }
+
+        // Calculate the item subtotal
+        const itemSubtotal = product.price * item.quantity;
+
+        calculatedItems.push({
+          productId: product.id,
+          productName: product.name,
+          quantity: item.quantity,
+          unitPrice: product.price,
+          subtotal: itemSubtotal,
+        });
       }
-    }
 
-    // 4. Calculate each item's subtotal
-    const calculatedItems = items.map((item: {
-      productName: string;
-      quantity: number;
-      unitPrice: number;
-    }) => ({
-      productName: item.productName,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      subtotal: item.quantity * item.unitPrice,
-    }));
+      // 5. Calculate the order subtotal
+      const subtotal = calculatedItems.reduce(
+        (sum, item) => sum + item.subtotal,
+        0
+      );
 
-    // 5. Calculate the order subtotal
-    const subtotal = calculatedItems.reduce(
-      (sum, item) => sum + item.subtotal,
-      0
-    );
+      // 6. Delivery fee
+      const deliveryFee = 500;
 
-    // 6. Calculate delivery fee
-    const deliveryFee = 500;
+      // 7. Final total
+      const total = subtotal + deliveryFee;
 
-    // 7. Calculate final total
-    const total = subtotal + deliveryFee;
+      // 8. Create the order
+      const newOrder = await tx.order.create({
+        data: {
+          customerId,
+          subtotal,
+          deliveryFee,
+          total,
+          location,
 
-    // 8. Create the order
-    const order = await prisma.order.create({
-      data: {
-        customerId,
-        subtotal,
-        deliveryFee,
-        total,
-        location,
-
-        items: {
-          create: calculatedItems,
+          items: {
+            create: calculatedItems,
+          },
         },
-      },
 
-      include: {
-        customer: true,
-        items: true,
-      },
+        include: {
+          customer: true,
+          items: true,
+        },
+      });
+
+      return newOrder;
     });
 
-    // 9. Return the created order
+    // 9. Everything succeeded
     return Response.json(
       {
         ok: true,
@@ -149,6 +176,40 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Failed to create order:", error);
+
+    if (error instanceof Error) {
+      if (error.message === "PRODUCT_NOT_FOUND") {
+        return Response.json(
+          {
+            ok: false,
+            error: "Product not found",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (error.message === "INVALID_ORDER_ITEM") {
+        return Response.json(
+          {
+            ok: false,
+            error: "Invalid order item",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (error.message.startsWith("NOT_ENOUGH_STOCK:")) {
+        const productName = error.message.split(":")[1];
+
+        return Response.json(
+          {
+            ok: false,
+            error: `Not enough stock for ${productName}`,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     return Response.json(
       {

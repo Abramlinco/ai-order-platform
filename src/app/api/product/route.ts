@@ -1,5 +1,33 @@
 import { prisma } from "@/lib/prisma";
 
+// GET Product API
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return Response.json({
+      ok: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+
+    return Response.json(
+      {
+        ok: false,
+        error: "Failed to fetch products",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+
+// POST product API
 export async function POST(request: Request) {
   try {
     const body = await request.json();
