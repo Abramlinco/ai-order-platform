@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Rider = {
@@ -16,7 +16,7 @@ type Rider = {
   status: "Available" | "On delivery" | "Offline";
 };
 
-export default function RidersPage() {
+function RidersContent() {
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState("");
@@ -990,5 +990,13 @@ export default function RidersPage() {
   </div>
 )}
     </main>
+  );
+}
+
+export default function RidersPage() {
+  return (
+    <Suspense fallback={null}>
+      <RidersContent />
+    </Suspense>
   );
 }

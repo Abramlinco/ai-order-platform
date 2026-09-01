@@ -25,6 +25,7 @@ model Customer {
 
   orders    Order[]
   feedback  Feedback[]
+  quotes    Quote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -44,6 +45,7 @@ model Product {
 
   orderItems OrderItem[]
   variants   ProductVariant[]
+  quoteItems QuoteItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,6 +66,7 @@ model ProductVariant {
   stock     Int    @default(0)
 
   orderItems OrderItem[]
+  quoteItems QuoteItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -206,4 +209,140 @@ model Feedback {
 
   @@index([customerId])
   @@index([createdAt])
+}
+
+// ================================================================
+// 7. QUOTE
+// ================================================================
+
+model Quote {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  subtotal    Int
+  deliveryFee Int
+  total       Int
+
+  location String
+
+  status QuoteStatus @default(Draft)
+
+  expiresAt DateTime?
+
+  items QuoteItem[]
+
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+
+// ================================================================
+// 8. QUOTE ITEM
+// ================================================================
+
+model QuoteItem {
+  id String @id @default(uuid())
+
+  quoteId String
+  quote   Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  productName String
+  variantName String?
+
+  quantity  Int
+  unitPrice Int
+  subtotal  Int
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+  @@index([productId])
+  @@index([variantId])
+}
+
+
+// ================================================================
+// 9. PAYMENT
+// ================================================================
+
+model Payment {
+  id String @id @default(uuid())
+
+  quoteId String @unique
+  quote   Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  amount Int
+
+  status PaymentStatus @default(Pending)
+
+  reference String?
+
+  confirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Business {
+  id String @id @default(uuid())
+
+  name String
+  phone String?
+
+  // Store / pickup location
+  address String?
+  latitude Float?
+  longitude Float?
+  placeId String?
+
+  // Delivery settings
+  localDeliveryEnabled Boolean @default(true)
+
+  interstateDeliveryEnabled Boolean @default(false)
+  interstatePricingMethod InterstatePricingMethod @default(Fixed)
+  interstateFixedFee Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InterstatePricingMethod {
+  Fixed
+  PerOrder
+  ExternalProvider
+}
+
+// ================================================================
+// ENUMS
+// ================================================================
+
+enum QuoteStatus {
+  Draft
+  Ready
+  Accepted
+  Declined
+  Expired
+  Cancelled
+}
+
+enum PaymentStatus {
+  Pending
+  Confirmed
+  Failed
+  Refunded
 }

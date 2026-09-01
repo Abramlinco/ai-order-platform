@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Product = {
@@ -12,7 +12,7 @@ type Product = {
   status: "In stock" | "Low stock" | "Out of stock";
 };
 
-export default function ProductsPage() {
+function ProductsContent() {
     const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All categories");
@@ -588,5 +588,13 @@ const handleUpdateProduct = () => {
         </div>
       )}
     </main>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsContent />
+    </Suspense>
   );
 }

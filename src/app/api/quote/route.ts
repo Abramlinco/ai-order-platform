@@ -5,29 +5,36 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { productId, quantity } = body;
+    const { productId, variantId, quantity, location } = body;
 
     // Check that the required information was provided
     if (
       !productId ||
+      !variantId ||
       quantity === undefined ||
-      quantity === null
+      quantity === null ||
+      !location
     ) {
       return NextResponse.json(
         {
           ok: false,
-          error: "productId and quantity are required",
+          error:
+            "productId, variantId, quantity, and location are required",
         },
         { status: 400 }
       );
     }
 
-    // Check that quantity is greater than zero
-    if (quantity <= 0) {
+    // Quantity must be a positive whole number
+    if (
+      typeof quantity !== "number" ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0
+    ) {
       return NextResponse.json(
         {
           ok: false,
-          error: "Quantity must be greater than 0",
+          error: "Quantity must be a positive whole number",
         },
         { status: 400 }
       );
@@ -51,21 +58,54 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check stock
-    if (product.stock < quantity) {
+    // Find the requested variant
+    const variant = await prisma.productVariant.findUnique({
+      where: {
+        id: variantId,
+      },
+    });
+
+    // Variant doesn't exist
+    if (!variant) {
       return NextResponse.json(
         {
           ok: false,
-          error: `Not enough stock for ${product.name}`,
-          availableStock: product.stock,
+          error: "Product variant not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Make sure the variant belongs to the selected product
+    if (variant.productId !== product.id) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Product variant does not belong to this product",
         },
         { status: 400 }
       );
     }
 
-    // Calculate quote
-    const subtotal = product.price * quantity;
+    // Check variant stock
+    if (variant.stock < quantity) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `Not enough stock for ${variant.name}`,
+          availableStock: variant.stock,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Calculate quote using the variant price
+    const subtotal = variant.price * quantity;
+
+    // Temporary delivery fee.
+    // We will replace this with the Delivery Pricing Service next.
     const deliveryFee = 500;
+
     const total = subtotal + deliveryFee;
 
     // Return quote
@@ -74,12 +114,19 @@ export async function POST(request: Request) {
       quote: {
         productId: product.id,
         productName: product.name,
+
+        variantId: variant.id,
+        variantName: variant.name,
+
         quantity,
-        unitPrice: product.price,
+        unitPrice: variant.price,
         subtotal,
+
+        location,
         deliveryFee,
         total,
-        availableStock: product.stock,
+
+        availableStock: variant.stock,
       },
     });
   } catch (error) {
