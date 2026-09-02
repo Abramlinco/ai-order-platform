@@ -4,6 +4,7 @@
 // ================================================================
 
 import { getTravoDeliveryQuote } from "./delivery-providers/travo";
+import { getMockDeliveryQuote } from "./delivery-providers/mock";
 
 export type DeliveryPricingRequest = {
   pickupLocation: string;
@@ -31,15 +32,21 @@ export async function calculateDeliveryPrice(
     process.env.DELIVERY_PROVIDER || "travo";
 
   switch (provider) {
-    case "travo":
-      return getTravoDeliveryQuote(
-        request.pickupLocation,
-        request.dropoffLocation
-      );
+  case "travo":
+    return getTravoDeliveryQuote(
+      request.pickupLocation,
+      request.dropoffLocation
+    );
 
-    default:
-      throw new Error(
-        `UNSUPPORTED_DELIVERY_PROVIDER:${provider}`
-      );
-  }
+  case "mock":
+    return getMockDeliveryQuote(
+      request.pickupLocation,
+      request.dropoffLocation
+    );
+
+  default:
+    throw new Error(
+      `UNSUPPORTED_DELIVERY_PROVIDER:${provider}`
+    );
+}
 }

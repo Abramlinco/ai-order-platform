@@ -306,6 +306,7 @@ model Business {
 
   // Store / pickup location
   address String?
+  state String?
   latitude Float?
   longitude Float?
   placeId String?

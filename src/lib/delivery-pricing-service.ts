@@ -47,9 +47,14 @@ export async function getDeliveryPricingDecision(
    * the authoritative state from the saved business
    * location.
    */
-  const businessLocation: LocationInput = {
-    state: "FCT",
-  };
+ 
+  if (!business.state) {
+  throw new Error("BUSINESS_STATE_NOT_CONFIGURED");
+}
+
+const businessLocation: LocationInput = {
+  state: business.state,
+};
 
   const deliveryType = classifyDeliveryLocation(
     businessLocation,
