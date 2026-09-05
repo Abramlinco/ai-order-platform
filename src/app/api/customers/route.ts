@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { name, phone } = body;
+    const { name, phone, email } = body;
 
     if (!name || !phone) {
       return Response.json(
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       data: {
         name,
         phone,
+        email,
       },
     });
 

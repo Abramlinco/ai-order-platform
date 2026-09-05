@@ -22,6 +22,7 @@ model Customer {
   id        String   @id @default(uuid())
   name      String
   phone     String   @unique
+  email     String?  @unique
 
   orders    Order[]
   feedback  Feedback[]
@@ -119,7 +120,7 @@ model Order {
   location      String
 
   // Current order status
-  status        OrderStatus @default(AwaitingApproval)
+  status OrderStatus @default(Confirmed)
 
   // Assigned rider
   riderId       String?
@@ -139,6 +140,9 @@ feedbackRequestedAt  DateTime?
   // Customer feedback after delivery
   feedback      Feedback?
 
+  // Invoice
+  invoice       Invoice?
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -150,10 +154,16 @@ feedbackRequestedAt  DateTime?
 
 
 enum OrderStatus {
-  AwaitingApproval
+  Confirmed
   FindingRider
   RiderAssigned
+  RiderAccepted
+  GoingToBusiness
+  ArrivedAtBusiness
+  OrderPickedUp
   OutForDelivery
+  ArrivedAtCustomer
+  VerifyingOTP
   Delivered
   Cancelled
 }
@@ -224,8 +234,18 @@ model Quote {
   subtotal    Int
   deliveryFee Int
   total       Int
+  currency    String @default("NGN")
 
   location String
+
+  deliveryType          DeliveryType
+  deliveryProvider      String?
+  providerQuoteId       String?
+  providerQuoteExpiresAt DateTime?
+
+  estimatedDurationMinutes Int?
+  distanceKm              Float?
+  trafficAware            Boolean?
 
   status QuoteStatus @default(Draft)
 
@@ -280,23 +300,49 @@ model QuoteItem {
 // ================================================================
 
 model Payment {
-  id String @id @default(uuid())
+  id              String        @id @default(uuid())
 
-  quoteId String @unique
-  quote   Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId         String        @unique
+  quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
-  amount Int
+  amount          Int
+  status          PaymentStatus @default(Pending)
 
-  status PaymentStatus @default(Pending)
+  reference String? @unique
+  authorizationUrl String?
+  accessCode      String?
 
-  reference String?
+  confirmedAt     DateTime?
 
-  confirmedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
+enum PaymentStatus {
+  Pending
+  Confirmed
+  Failed
+  Abandoned
+  Refunded
+}
+
+// ================================================================
+// ENUMS
+// ================================================================
+
+enum QuoteStatus {
+  Draft
+  Ready
+  Accepted
+  Declined
+  Expired
+  Cancelled
+}
+
+enum DeliveryType {
+  Local
+  Interstate
+}
 
 model Business {
   id String @id @default(uuid())
@@ -304,14 +350,12 @@ model Business {
   name String
   phone String?
 
-  // Store / pickup location
   address String?
   state String?
   latitude Float?
   longitude Float?
   placeId String?
 
-  // Delivery settings
   localDeliveryEnabled Boolean @default(true)
 
   interstateDeliveryEnabled Boolean @default(false)
@@ -328,22 +372,41 @@ enum InterstatePricingMethod {
   ExternalProvider
 }
 
-// ================================================================
-// ENUMS
-// ================================================================
+model Invoice {
+  id String @id @default(uuid())
 
-enum QuoteStatus {
-  Draft
-  Ready
-  Accepted
-  Declined
-  Expired
-  Cancelled
-}
+  // Invoice identity
+  invoiceNumber String @unique
 
-enum PaymentStatus {
-  Pending
-  Confirmed
-  Failed
-  Refunded
+  // Order relationship
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Business snapshot
+  businessName    String
+  businessPhone   String?
+  businessAddress String?
+
+  // Customer snapshot
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  // Delivery snapshot
+  deliveryAddress String
+
+  // Financial snapshot
+  subtotal    Int
+  deliveryFee Int
+  total       Int
+  currency    String @default("NGN")
+
+  // Payment record
+  paymentReference String?
+  paymentStatus    String
+
+  // Invoice lifecycle
+  issuedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
