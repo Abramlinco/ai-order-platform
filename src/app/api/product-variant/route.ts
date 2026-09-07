@@ -1,122 +1,79 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: Request) {
+function text(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export async function GET(request: Request) {
   try {
-    const body = await request.json();
+    const productId = new URL(request.url).searchParams.get("productId");
 
-    const { productId, name, price, stock } = body;
-
-    // Check required information
-    if (
-      !productId ||
-      !name ||
-      price === undefined ||
-      stock === undefined
-    ) {
+    if (!productId) {
       return NextResponse.json(
-        {
-          ok: false,
-          error: "productId, name, price and stock are required",
-        },
+        { ok: false, error: "productId is required" },
         { status: 400 }
       );
     }
 
-    // Check price
-    if (price < 0) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Price cannot be negative",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check stock
-    if (stock < 0) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Stock cannot be negative",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Make sure the parent product exists
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
+    const variants = await prisma.productVariant.findMany({
+      where: { productId },
+      orderBy: { createdAt: "asc" },
     });
 
-    if (!product) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Product not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    // Create the variant
-    const variant = await prisma.productVariant.create({
-      data: {
-        productId,
-        name,
-        price,
-        stock,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        ok: true,
-        variant,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ ok: true, variants });
   } catch (error) {
-    console.error("PRODUCT VARIANT ERROR:", error);
-
+    console.error("GET /api/product-variant failed:", error);
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Something went wrong while creating the product variant",
-      },
+      { ok: false, error: "Unable to load variants" },
       { status: 500 }
     );
   }
 }
 
-// GET product-variant
-
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const variants = await prisma.productVariant.findMany({
-      include: {
-        product: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    const body = await request.json();
+    const productId = text(body?.productId);
+    const name = text(body?.name);
+    const price = Number(body?.price);
+    const stock = Number(body?.stock);
+
+    if (!productId || !name) {
+      return NextResponse.json(
+        { ok: false, error: "productId and variant name are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!Number.isInteger(price) || price < 0 || !Number.isInteger(stock) || stock < 0) {
+      return NextResponse.json(
+        { ok: false, error: "Variant price and stock must be valid non-negative numbers" },
+        { status: 400 }
+      );
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
     });
 
-    return NextResponse.json({
-      ok: true,
-      variants,
+    if (!product) {
+      return NextResponse.json(
+        { ok: false, error: "Parent product not found" },
+        { status: 404 }
+      );
+    }
+
+    const variant = await prisma.productVariant.create({
+      data: { productId, name, price, stock },
     });
+
+    return NextResponse.json({ ok: true, variant }, { status: 201 });
   } catch (error) {
-    console.error("GET PRODUCT VARIANTS ERROR:", error);
-
+    console.error("POST /api/product-variant failed:", error);
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Something went wrong while fetching product variants",
-      },
+      { ok: false, error: "Unable to create variant" },
       { status: 500 }
     );
   }
