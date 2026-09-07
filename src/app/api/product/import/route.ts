@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function text(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function integer(value: unknown) {
-  const n = Number(value);
-  return Number.isInteger(n) ? n : NaN;
-}
+import { validateProductRows } from "@/lib/product-validation";
 
 export async function POST(request: Request) {
   try {
@@ -16,35 +8,34 @@ export async function POST(request: Request) {
     const products = Array.isArray(body?.products) ? body.products : [];
 
     if (!products.length) {
-      return NextResponse.json({ ok: false, error: "At least one product is required" }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "At least one product is required" },
+        { status: 400 }
+      );
     }
 
-    const normalized = products.map((item: any) => ({
-      name: text(item?.name),
-      category: text(item?.category),
-      price: integer(item?.price),
-      stock: integer(item?.stock),
-    }));
-
-    const invalidIndex = normalized.findIndex(
-      (item) =>
-        !item.name ||
-        !item.category ||
-        !Number.isInteger(item.price) ||
-        item.price < 0 ||
-        !Number.isInteger(item.stock) ||
-        item.stock < 0
-    );
-
-    if (invalidIndex !== -1) {
+    // The frontend review screen must explicitly confirm the staged rows.
+    // Authentication/merchant authorization will be added with the
+    // multi-tenant security layer; this flag prevents accidental direct
+    // publishing from an unreviewed import payload.
+    if (body?.confirmed !== true) {
       return NextResponse.json(
-        { ok: false, error: `Product row ${invalidIndex + 1} is invalid. Nothing was imported.` },
+        { ok: false, error: "Product import requires explicit confirmation before publishing" },
+        { status: 400 }
+      );
+    }
+
+    const result = validateProductRows(products);
+
+    if (!result.ok) {
+      return NextResponse.json(
+        { ok: false, error: result.error },
         { status: 400 }
       );
     }
 
     const created = await prisma.$transaction(
-      normalized.map((item) =>
+      result.products.map((item) =>
         prisma.product.create({
           data: item,
         })
@@ -54,6 +45,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, count: created.length });
   } catch (error) {
     console.error("POST /api/product/import failed:", error);
-    return NextResponse.json({ ok: false, error: "Unable to import products" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Unable to import products" },
+      { status: 500 }
+    );
   }
 }

@@ -425,7 +425,7 @@ export default function ProductsPage() {
       const response = await fetch("/api/product/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ products: validated.map(({ name, category, price, stock }) => ({ name: name.trim(), category: category.trim(), price: Number(price), stock: Number(stock) })) }),
+        body: JSON.stringify({ confirmed: true, products: validated.map(({ name, category, price, stock }) => ({ name: name.trim(), category: category.trim(), price: Number(price), stock: Number(stock) })) }),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || "Unable to import products");
