@@ -1083,9 +1083,6 @@ export default function ProductsPage() {
                       <p className="text-sm font-semibold text-slate-900">Products to add</p>
                       <p className="text-xs text-slate-500">Add as many products as you need, then validate and submit.</p>
                     </div>
-                    <button type="button" onClick={() => setBulkRows((r) => [...r, { name: "", category: "", price: "", stock: "", errors: { name: "Product name is required.", category: "Category is required.", price: "Enter a valid price.", stock: "Enter a valid stock quantity." } }])} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100" title="Add another product">
-                      <Icon name="plus" size={16} /> Add product
-                    </button>
                   </div>
                   <div className="overflow-x-auto rounded-xl border border-slate-200">
                   <table className="min-w-[760px] w-full text-sm">
@@ -1095,7 +1092,30 @@ export default function ProductsPage() {
                         const field = (key: keyof ProductErrors) => row.errors[key];
                         return <tr key={index} className="align-top">
                           {(["name", "category", "price", "stock"] as const).map((key) => <td key={key} className="px-3 py-3"><input value={row[key]} onChange={(e) => updateBulkRow(index, key, e.target.value)} className={`h-10 w-full min-w-[150px] rounded-lg border px-3 outline-none ${field(key) ? "border-red-500 bg-red-50/30" : "border-slate-300 focus:border-emerald-600"}`} /></td>)}
-                          <td className="px-3 py-3"><span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${Object.keys(row.errors).length ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}><Icon name={Object.keys(row.errors).length ? "alert" : "check"} size={13} />{Object.keys(row.errors).length ? "Needs correction" : "Valid"}</span>{Object.values(row.errors).length > 0 && <ul className="mt-2 space-y-1 text-xs text-red-600">{Object.values(row.errors).map((e, i) => <li key={i}>{e}</li>)}</ul>}</td>
+                          <td className="px-3 py-3">
+  <div className="flex flex-wrap items-start gap-2">
+    <div className="min-w-[150px] flex-1">
+      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${Object.keys(row.errors).length ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>
+        <Icon name={Object.keys(row.errors).length ? "alert" : "check"} size={13} />
+        {Object.keys(row.errors).length ? "Needs correction" : "Valid"}
+      </span>
+      {Object.values(row.errors).length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-red-600">
+          {Object.values(row.errors).map((e, i) => <li key={i}>{e}</li>)}
+        </ul>
+      )}
+    </div>
+    <button
+      type="button"
+      onClick={() => setBulkRows((current) => current.filter((_, i) => i !== index))}
+      className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+      title="Remove this staged product"
+    >
+      <Icon name="close" size={14} />
+      Remove
+    </button>
+  </div>
+</td>
                         </tr>;
                       })}
                     </tbody>

@@ -13,36 +13,34 @@ datasource db {
   provider = "postgresql"
 }
 
-
 // ================================================================
 // 1. CUSTOMER
 // ================================================================
 
 model Customer {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String   @unique
-  email     String?  @unique
+  id    String  @id @default(uuid())
+  name  String
+  phone String  @unique
+  email String? @unique
 
-  orders    Order[]
-  feedback  Feedback[]
-  quotes    Quote[]
+  orders   Order[]
+  feedback Feedback[]
+  quotes   Quote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 // ================================================================
 // 2. PRODUCT
 // ================================================================
 
 model Product {
-  id        String      @id @default(uuid())
-  name      String
-  category  String
-  price     Int
-  stock     Int         @default(0)
+  id       String @id @default(uuid())
+  name     String
+  category String
+  price    Int
+  stock    Int    @default(0)
 
   orderItems OrderItem[]
   variants   ProductVariant[]
@@ -57,14 +55,14 @@ model Product {
 // ================================================================
 
 model ProductVariant {
-  id        String  @id @default(uuid())
+  id String @id @default(uuid())
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  name      String
-  price     Int
-  stock     Int    @default(0)
+  name  String
+  price Int
+  stock Int    @default(0)
 
   orderItems OrderItem[]
   quoteItems QuoteItem[]
@@ -75,22 +73,32 @@ model ProductVariant {
   @@index([productId])
 }
 
-
 // ================================================================
 // 3. RIDER
 // ================================================================
 
 model Rider {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String
-  bike      String
-  status    RiderStatus @default(Available)
+  id    String @id @default(uuid())
+  name  String
+  phone String
+  bike  String
+
+  // Operational status
+  status RiderStatus @default(Available)
+
+  // Management / eligibility status
+  accountStatus    RiderAccountStatus @default(Active)
+  suspensionReason String?
+  suspendedAt      DateTime?
+  blockedReason    String?
+  blockedAt        DateTime?
 
   orders    Order[]
+  auditLogs RiderAuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  restoredAt DateTime?
 }
 
 enum RiderStatus {
@@ -99,59 +107,82 @@ enum RiderStatus {
   Offline
 }
 
+enum RiderAccountStatus {
+  Active
+  Suspended
+  Blocked
+}
+
+// ================================================================
+// 3b. ORDER
+// ================================================================
+
+model RiderAuditLog {
+  id String @id @default(uuid())
+
+  riderId String
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  action String
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([riderId])
+  @@index([createdAt])
+}
 
 // ================================================================
 // 4. ORDER
 // ================================================================
 
 model Order {
-  id            String      @id @default(uuid())
+  id String @id @default(uuid())
 
   // Customer
-  customerId    String
-  customer      Customer    @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
   // Financial information
-  subtotal      Int
-  deliveryFee   Int
-  total         Int
+  subtotal    Int
+  deliveryFee Int
+  total       Int
 
   // Delivery information
-  location      String
+  location String
 
   // Current order status
   status OrderStatus @default(Confirmed)
 
   // Assigned rider
-  riderId       String?
-  rider         Rider?      @relation(fields: [riderId], references: [id])
+  riderId String?
+  rider   Rider?  @relation(fields: [riderId], references: [id])
 
- // Delivery OTP
-deliveryOtpHash      String?
-deliveryOtpExpiresAt DateTime?
-otpVerifiedAt        DateTime?
+  // Delivery OTP
+  deliveryOtpHash      String?
+  deliveryOtpExpiresAt DateTime?
+  otpVerifiedAt        DateTime?
 
-// Customer feedback workflow
-feedbackRequestedAt  DateTime?
+  // Customer feedback workflow
+  feedbackRequestedAt DateTime?
 
   // Products in this order
-  items         OrderItem[]
+  items OrderItem[]
 
   // Customer feedback after delivery
-  feedback      Feedback?
+  feedback Feedback?
 
   // Invoice
-  invoice       Invoice?
+  invoice Invoice?
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([customerId])
   @@index([riderId])
   @@index([status])
   @@index([createdAt])
 }
-
 
 enum OrderStatus {
   Confirmed
@@ -168,19 +199,18 @@ enum OrderStatus {
   Cancelled
 }
 
-
 // ================================================================
 // 5. ORDER ITEM
 // ================================================================
 
 model OrderItem {
-  id          String  @id @default(uuid())
+  id String @id @default(uuid())
 
-  orderId     String
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  productId   String?
-  product     Product? @relation(fields: [productId], references: [id])
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
 
   variantId String?
   variant   ProductVariant? @relation(fields: [variantId], references: [id])
@@ -191,31 +221,30 @@ model OrderItem {
   unitPrice   Int
   subtotal    Int
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([orderId])
   @@index([productId])
 }
-
 
 // ================================================================
 // 6. CUSTOMER FEEDBACK
 // ================================================================
 
 model Feedback {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
-  orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  rating      Int
-  comment     String?
+  rating  Int
+  comment String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([customerId])
   @@index([createdAt])
@@ -238,14 +267,14 @@ model Quote {
 
   location String
 
-  deliveryType          DeliveryType
-  deliveryProvider      String?
-  providerQuoteId       String?
+  deliveryType           DeliveryType
+  deliveryProvider       String?
+  providerQuoteId        String?
   providerQuoteExpiresAt DateTime?
 
   estimatedDurationMinutes Int?
-  distanceKm              Float?
-  trafficAware            Boolean?
+  distanceKm               Float?
+  trafficAware             Boolean?
 
   status QuoteStatus @default(Draft)
 
@@ -263,7 +292,6 @@ model Quote {
   @@index([createdAt])
 }
 
-
 // ================================================================
 // 8. QUOTE ITEM
 // ================================================================
@@ -272,7 +300,7 @@ model QuoteItem {
   id String @id @default(uuid())
 
   quoteId String
-  quote   Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
   productId String?
   product   Product? @relation(fields: [productId], references: [id])
@@ -294,28 +322,27 @@ model QuoteItem {
   @@index([variantId])
 }
 
-
 // ================================================================
 // 9. PAYMENT
 // ================================================================
 
 model Payment {
-  id              String        @id @default(uuid())
+  id String @id @default(uuid())
 
-  quoteId         String        @unique
-  quote           Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId String @unique
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
-  amount          Int
-  status          PaymentStatus @default(Pending)
+  amount Int
+  status PaymentStatus @default(Pending)
 
-  reference String? @unique
+  reference        String? @unique
   authorizationUrl String?
-  accessCode      String?
+  accessCode       String?
 
-  confirmedAt     DateTime?
+  confirmedAt DateTime?
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PaymentStatus {
@@ -347,20 +374,24 @@ enum DeliveryType {
 model Business {
   id String @id @default(uuid())
 
-  name String
+  name  String
   phone String?
 
-  address String?
-  state String?
-  latitude Float?
+  address   String?
+  state     String?
+  latitude  Float?
   longitude Float?
-  placeId String?
+  placeId   String?
 
   localDeliveryEnabled Boolean @default(true)
 
-  interstateDeliveryEnabled Boolean @default(false)
-  interstatePricingMethod InterstatePricingMethod @default(Fixed)
-  interstateFixedFee Int?
+  interstateDeliveryEnabled Boolean                 @default(false)
+  interstatePricingMethod   InterstatePricingMethod @default(Fixed)
+  interstateFixedFee        Int?
+
+  maxRiderSuspensions       Int @default(3)
+  riderSuspensionWindowDays Int @default(30)
+  riderRestoreCooldownHours Int @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
